@@ -12,12 +12,24 @@
 </template>
 
 <style scoped>
+    * {
+        font-family: 'Courier New', Courier, monospace;
+        color: black;
+    }
+
     main {
         display: flex;
-        flex-direction: column;
+        margin: 3rem;
         gap: 2rem;
+        align-items: center;
+        justify-content: center;
+        flex-wrap: wrap;
     }
     div {
         background-color: burlywood;
+        width: 20rem;
+        height: 20rem;
+        border-radius: 15%;
+        text-align: center;
     }
 </style>
