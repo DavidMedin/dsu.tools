@@ -3,28 +3,37 @@
 <script setup>
 import ToolGrid from "./components/ToolGrid.vue";
 import ToolItem from "./components/ToolItem.vue";
+import Footer from "./components/Footer.vue";
+import Header from "./components/Header.vue";
 </script>
 
 <template>
-    <header>
-        <h1 class="green">dsu.tools</h1>
-    </header>
+    <div id="everything">
+        <Header />
 
-    <main>
-        <div id="main_div">
-            <p>Hello. Here are some tools.</p>
-            <ToolGrid>
-                <ToolItem tool_name="Calculator" />
-                <ToolItem tool_name="Your Mom's House Live Cam" />
-            </ToolGrid>
-        </div>
-    </main>
+        <main>
+            <div id="main_div">
+                <p>Hello. Here are some tools.</p>
+                <ToolGrid>
+                    <ToolItem tool_name="Calculator" />
+                    <ToolItem tool_name="Sodexo Menu" />
+                    <ToolItem tool_name="Study Buddy" />
+                    <ToolItem tool_name="DSU Events" />
+                </ToolGrid>
+            </div>
+        </main>
+
+        <Footer />
+    </div>
 </template>
 
 <style scoped>
-main {
-    /* Center all items in this element. */
+#everything {
     display: flex;
-    justify-content: center;
+    flex-direction: column;
+    min-height: 100vh;
+}
+main {
+    flex-grow: 1;
 }
 </style>

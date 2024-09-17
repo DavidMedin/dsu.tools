@@ -1,0 +1,16 @@
+<template>
+    <header>
+        <h1 class="green">dsu.tools</h1>
+
+        <a href="irina.html">Irina's Page</a>
+    </header>
+</template>
+
+<style scoped>
+header {
+    flex-grow: 0;
+
+    display: flex;
+    justify-content: space-between;
+}
+</style>
