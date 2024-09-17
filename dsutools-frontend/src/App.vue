@@ -14,7 +14,10 @@ import Header from "./components/Header.vue";
         <main>
             <p>Hello. Here are some tools.</p>
             <ToolGrid>
-                <ToolItem tool_name="Calculator" />
+                <ToolItem
+                    tool_name="Calculator"
+                    style="grid-row: 1 / 3; grid-column: 1 / 2"
+                />
                 <ToolItem tool_name="Sodexo Menu" />
                 <ToolItem tool_name="Study Buddy" />
                 <ToolItem tool_name="DSU Events" />

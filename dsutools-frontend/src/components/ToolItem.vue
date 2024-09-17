@@ -8,10 +8,10 @@ defineProps({
 </script>
 
 <template>
-    <a class="box-link" href="/irina.html">
-        <div class="tool">
-            <p>{{ tool_name || "MISSING TOOL NAME" }}</p>
-        </div>
+    <a class="box-link tool" href="/irina.html">
+        <p>{{ tool_name || "MISSING TOOL NAME" }}</p>
+
+        <slot></slot>
     </a>
 </template>
 
@@ -22,6 +22,8 @@ defineProps({
     padding: 0.5em;
     margin: 0.5em;
     min-height: 5em;
+    width: 100%;
+    height: 100%;
 }
 
 .tool:hover {
