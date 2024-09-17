@@ -12,15 +12,13 @@ import Header from "./components/Header.vue";
         <Header />
 
         <main>
-            <div id="main_div">
-                <p>Hello. Here are some tools.</p>
-                <ToolGrid>
-                    <ToolItem tool_name="Calculator" />
-                    <ToolItem tool_name="Sodexo Menu" />
-                    <ToolItem tool_name="Study Buddy" />
-                    <ToolItem tool_name="DSU Events" />
-                </ToolGrid>
-            </div>
+            <p>Hello. Here are some tools.</p>
+            <ToolGrid>
+                <ToolItem tool_name="Calculator" />
+                <ToolItem tool_name="Sodexo Menu" />
+                <ToolItem tool_name="Study Buddy" />
+                <ToolItem tool_name="DSU Events" />
+            </ToolGrid>
         </main>
 
         <Footer />
@@ -35,5 +33,8 @@ import Header from "./components/Header.vue";
 }
 main {
     flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    text-align: center;
 }
 </style>

@@ -13,4 +13,8 @@ header {
     display: flex;
     justify-content: space-between;
 }
+
+header > * {
+    align-self: center;
+}
 </style>
