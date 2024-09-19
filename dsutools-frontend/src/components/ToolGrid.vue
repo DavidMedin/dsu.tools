@@ -11,11 +11,11 @@
 <style scoped>
 .grid {
     display: grid;
-    grid-template-columns: 10vw 10vw;
+    grid-template-columns: 20vw 20vw 20vw;
     grid-auto-flow: dense;
     gap: 0.5em; /* vertical and horizontal */
     place-items: center; /* vertical and horizontal */
     place-content: center; /* place the entire grid. (h and v) */
-    grid-auto-columns: 10em;
+    grid-auto-rows: 20em;
 }
 </style>

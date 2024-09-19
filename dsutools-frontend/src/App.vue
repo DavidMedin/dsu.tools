@@ -18,9 +18,12 @@ import Header from "./components/Header.vue";
                     tool_name="Calculator"
                     style="grid-row: 1 / 3; grid-column: 1 / 2"
                 />
-                <ToolItem tool_name="Sodexo Menu" />
-                <ToolItem tool_name="Study Buddy" />
-                <ToolItem tool_name="DSU Events" />
+                <ToolItem tool_name="Sodexo Menu" style="grid-column: 2 / 4" />
+                <ToolItem tool_name="Study Buddy" style="grid-column: 2/3" />
+                <ToolItem
+                    tool_name="DSU Events"
+                    style="grid-row: 2/4; grid-column: 3/4"
+                />
             </ToolGrid>
         </main>
 
