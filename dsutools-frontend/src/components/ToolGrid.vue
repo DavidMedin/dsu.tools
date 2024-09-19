@@ -17,5 +17,7 @@
     place-items: center; /* vertical and horizontal */
     place-content: center; /* place the entire grid. (h and v) */
     grid-auto-rows: 20em;
+
+    margin: 1em;
 }
 </style>
