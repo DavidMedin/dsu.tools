@@ -10,8 +10,4 @@ footer {
     justify-content: center;
     flex-grow: 0;
 }
-
-footer > * {
-    margin-bottom: 0.5em;
-}
 </style>

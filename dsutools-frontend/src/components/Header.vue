@@ -1,7 +1,6 @@
 <template>
     <header>
         <h1 class="green">dsu.tools</h1>
-        <a href="irina.html">Irina's Page</a>
     </header>
 </template>
 

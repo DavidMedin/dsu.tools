@@ -8,19 +8,22 @@ defineProps({
 </script>
 
 <template>
-    <a class="box-link tool" href="/irina.html">
-        <p id="title">{{ tool_name || "MISSING TOOL NAME" }}</p>
+    <a id="outer-link" href="/irina.html">
+        <div class="round-box">
+            <p id="title">{{ tool_name || "MISSING TOOL NAME" }}</p>
 
-        <slot></slot>
+            <slot />
+        </div>
     </a>
 </template>
 
 <style scoped>
 /* Don't style the anchor. */
-a {
+#outer-link {
     all: revert;
     text-decoration: none;
-    box-sizing: border-box;
+    width: 100%;
+    height: 100%;
 }
 
 /* Style text to look normal. */
@@ -28,20 +31,15 @@ a {
     color: var(--color-text);
 }
 
-.tool {
-    background-color: var(--color-background-soft);
-    border-radius: 0.5em;
-    padding: 0.5em;
-    margin: 0.5em;
-    min-height: 5em;
+.round-box {
     width: 100%;
     height: 100%;
-    border-color: hsla(160, 100%, 37%, 1);
+    border-color: rgb(0, 169, 224);
     border-width: 0.1em;
     border-style: solid;
 }
 
-.tool:hover {
+.round-box:hover {
     background-color: var(--color-background-mute);
 }
 

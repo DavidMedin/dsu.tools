@@ -8,20 +8,15 @@ defineProps({
 </script>
 
 <template>
-    <div class="tool">
+    <div class="round-box">
         <p id="title">{{ tool_name || "MISSING TOOL NAME" }}</p>
 
-        <slot></slot>
+        <slot />
     </div>
 </template>
 
 <style scoped>
-.tool {
-    background-color: var(--color-background-soft);
-    border-radius: 0.5em;
-    padding: 0.5em;
-    margin: 0.5em;
-    min-height: 5em;
+.round-box {
     width: 100%;
     height: 100%;
 }
@@ -29,12 +24,4 @@ defineProps({
 #title {
     text-align: center;
 }
-
-/* .tool:hover {
-    background-color: var(--color-background-mute);
-}
-
-.box-link:hover {
-    background-color: revert;
-} */
 </style>
