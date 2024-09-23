@@ -22,7 +22,20 @@ import { reactive } from 'vue'
 //**FORM BINDINGS**
 //v-model directive: automatically syncs the <input>'s value with the bound state
 
-//
+//**CONDITION RENDERERS**
+//v-if directive: renders something if given value is truthy
+//v-else
+//v-else-if
+
+//**LIST RENDERING**
+//v-for directive: render a list of elements based on a source array
+/*
+  <ul> <!-- unordered list -->
+    <li v-for="todo in todos" :key="todo.id"> <!-- list element -->
+      {{ todo.text }}
+    </li>
+  </ul>
+*/
 
 </script>
 
