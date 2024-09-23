@@ -1,7 +1,6 @@
 <script setup>
-import { ref } from 'vue' 
-import { reactive } from 'vue'
-
+import { ref, reactive } from 'vue'
+ 
 //**DECLARATIVE RENDERING
 //reactive: a state that can trigger updates
 //  - reactive only works on objects (ex. arrays, maps, set, etc.)
