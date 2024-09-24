@@ -19,6 +19,23 @@
     --vt-c-text-light-2: rgba(60, 60, 60, 0.66);
     --vt-c-text-dark-1: var(--vt-c-white);
     --vt-c-text-dark-2: rgba(235, 235, 235, 0.64);
+
+    /* Here I'm using the Hue-Chroma-Tone color space to design a color system. */
+    /* Unfortunately, CSS doesn't support HCT like the rgb() function, so I'm using */
+    /* https://www.hct-color-converter.com/ */
+    /* to pick colors based on HCT, but then using their hex in CSS. */
+    /* primary: hct(233, 53%, 65%) */
+    --color-primary: #00aae1;
+
+    /* secondary: hct(233,11%,65%) */
+    --color-secondary: #949fa8;
+
+    /* tertiary: hct(208, 53%, 65%)*/
+    --color-tertiary: #00aebe;
+    /* tertiary container: hct(208, 33%, 77%)*/
+    --color-tertiary-container: #82cad4;
+    /* tertiary on container: hct(208, 53%, 35%)*/
+    --color-tertiary-on-container: #005c64;
 }
 
 /* semantic color variables for this project */

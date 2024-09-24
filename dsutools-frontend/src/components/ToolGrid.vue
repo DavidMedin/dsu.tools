@@ -15,7 +15,7 @@
     grid-auto-flow: dense;
 
     /* vertical and horizontal */
-    gap: 0.5em;
+    gap: 2em;
 
     /* place the entire grid. (h and v) */
     place-content: center;

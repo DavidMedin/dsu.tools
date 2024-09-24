@@ -3,25 +3,27 @@
 
 /* Page layout */
 
+.round-box {
+    background-color: var(--color-background-soft);
+    border-radius: 1em;
+    padding: 1em;
+    min-height: 5em;
+}
+
 a,
-.green {
+.dsu-blue {
     text-decoration: none;
-    color: rgb(0, 169, 224);
+    color: var(--color-primary);
     transition: 0.4s;
     padding: 3px;
     border-radius: 0.5em;
 }
 
-.round-box {
-    background-color: var(--color-background-soft);
-    border-radius: 0.5em;
-    padding: 1em;
-    min-height: 5em;
-}
-
 /* When hovering is supported by the browser. */
 @media (hover: hover) {
     a:hover {
-        background-color: hsla(160, 100%, 37%, 0.2);
+        /* background-color: hsla(160, 100%, 37%, 0.2); */
+        background-color: var(--color-tertiary-container);
+        color: var(--color-tertiary-on-container);
     }
 }
