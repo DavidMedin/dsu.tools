@@ -1,10 +1,11 @@
 <script setup>
 import { onMounted } from "vue";
 import { Hct } from "@material/material-color-utilities";
+const emit = defineEmits(["color"]);
 
 const slider_width = 500;
 const slider_height = 30;
-const handle_height = 24;
+const handle_width = 24;
 
 let pressed = false;
 let cursorOffset = 0;
@@ -25,9 +26,14 @@ function hctToSrgb(hct) {
     return color;
 }
 
+function handleXPxToColor(x) {
+    let hct = { hue: (x / slider_width) * 360, chroma: 122, tone: 50 };
+    let color = hctToSrgb(hct);
+    return color;
+}
+
 function handleTransformStyle(x) {
-    return `translate(${x - slider_width}px,0px)`;
-    // return `translate(${x}px,${slider_height / 2 - handle_height / 2}px)`;
+    return `translate(${x - slider_width - handle_width / 2}px,0px)`;
 }
 
 onMounted(() => {
@@ -36,16 +42,17 @@ onMounted(() => {
     const slider_el = document.getElementById("color-slider");
 
     let bound = slider_el.getBoundingClientRect();
-    let left_bound_absolute = bound.left;
-    let right_bound_relative = slider_width - 24; // the SVG handle for the slider is 24px wide.
+    let left_bound_absolute = bound.left - handle_width / 2;
+    let right_bound_relative = slider_width; // the SVG handle for the slider is 24px wide.
 
     handle_el.addEventListener("mousedown", (e) => {
         pressed = true;
         // slider.style.cursor = "grabbing";
         cursorOffset = e.x - handle_el.getBoundingClientRect().left;
 
-        // If the winodw is resized, the left bound of the slider will change; update it.
-        left_bound_absolute = slider_el.getBoundingClientRect().left;
+        // If the window is resized, the left bound of the slider will change; update it.
+        left_bound_absolute =
+            slider_el.getBoundingClientRect().left - handle_width / 2;
     });
     window.addEventListener("mousemove", (e) => {
         if (!pressed) return;
@@ -60,6 +67,8 @@ onMounted(() => {
         }
 
         handle_el.style.transform = handleTransformStyle(new_x);
+
+        emit("color", handleXPxToColor(new_x));
     });
 
     window.addEventListener("mouseup", () => {
@@ -73,8 +82,7 @@ onMounted(() => {
 
         let img_arr = new Uint8ClampedArray(slider_width * slider_height * 4);
         for (let i = 0; i < slider_width; i++) {
-            let hct = { hue: (i / slider_width) * 360, chroma: 122, tone: 50 };
-            let color = hctToSrgb(hct);
+            let color = handleXPxToColor(i);
             for (let j = 0; j < slider_height; j++) {
                 img_arr.set(color, (j * slider_width + i) * 4);
             }
@@ -85,6 +93,8 @@ onMounted(() => {
         });
         ctx.putImageData(img_data, 0, 0);
     }
+
+    emit("color", handleXPxToColor(0));
 });
 </script>
 
@@ -127,13 +137,10 @@ onMounted(() => {
     flex-direction: row;
     align-items: center;
 }
-/* #color-slider {
-    position: absolute;
-    left: 0;
-    top: 0;
-} */
+#color-slider {
+    border-radius: 0.5rem;
+}
 #handle {
-    /* transform: translate(0px, 0px); */
     will-change: transform;
     width: 24px;
     height: 24px;
