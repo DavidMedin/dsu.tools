@@ -5,20 +5,31 @@ const curNumber = ref('') //what is currently being typed
 const cacheNum = ref('') //used if an operator has been selected to store prev curNumber
 const Operator = Object.freeze({ //used to store which operator is currently happening (enum)
   NONE: 'n/a',
+  DONE: '=',
   ADD: '+',
-  SUB: '-'
+  SUB: '-',
+  MUL: '*',
+  DIV: '/'
 })
 var curOp = Operator.NONE
+var cacheOp = Operator.NONE
 var clearText = false
 
 function Append(input)
 {
-  if(clearText)
+  if(curOp === Operator.DONE)
+  {
+    ClearMem()
+    clearText = false
+  }
+  else if(clearText)
   {
     Clear()
     clearText = false
   }
+  
   //adds input at the end of the string
+  console.log(input)
   curNumber.value += input
 }
 
@@ -31,6 +42,11 @@ function ClearMem()
 {
   curNumber.value = ''
   curOp = Operator.NONE
+}
+
+function Delete()
+{
+  curNumber.value = curNumber.value.substring(0, curNumber.value.length-1)
 }
 
 function Operation(input)
@@ -46,9 +62,25 @@ function Operation(input)
 
 function Equals()
 {
-  var numA = parseFloat(cacheNum.value)
-  var numB = parseFloat(curNumber.value)
-  var calculation = ''
+  var numA = cacheNum.value
+  var numB = curNumber.value
+  var calculation = 0
+  var doCacheNum = true
+
+
+
+  //check to see if equals is getting pressed over and over
+  if(curOp === Operator.DONE)
+  {
+    curOp = cacheOp
+    doCacheNum = false
+  }
+  else
+  {
+    doCacheNum = true
+  }
+  
+  //do equals
   if(curOp === Operator.NONE)
   {
     return;
@@ -61,7 +93,19 @@ function Equals()
   {
     calculation = numA - numB
   }
+  else if(curOp === Operator.MUL)
+  {
+    calculation = numA * numB
+  }
+  else if(curOp === Operator.DIV)
+  {
+    calculation = numA / numB
+  }
 
+  if(doCacheNum)
+    cacheNum.value = numB
+  cacheOp = curOp
+  curOp = Operator.DONE
   curNumber.value = calculation
   clearText = true;
 }
@@ -90,8 +134,11 @@ function Equals()
   <div class="parent-flex">
     <button class="child-flex" @click="Clear()"> CLR </button>
     <button class="child-flex" @click="ClearMem()"> CLM </button>
+    <button class="child-flex" @click="Delete()"> DEL </button>
     <button class="child-flex" @click="Operation(Operator.ADD)"> + </button>
     <button class="child-flex" @click="Operation(Operator.SUB)"> - </button>
+    <button class="child-flex" @click="Operation(Operator.MUL)"> * </button>
+    <button class="child-flex" @click="Operation(Operator.DIV)"> / </button>
     <button class="child-flex" @click="Equals()"> = </button>
   </div>
   </div>
