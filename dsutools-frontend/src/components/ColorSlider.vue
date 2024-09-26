@@ -1,7 +1,25 @@
 <script setup>
 import { onMounted } from "vue";
 import { Hct } from "@material/material-color-utilities";
-const emit = defineEmits(["color"]);
+// const emit = defineEmits(["color"]);
+
+// Input/Output Model for the Color Slider:
+// {
+// [parameter] colorSpace : Function(colorspace-color) -> sRGB-color
+// [input] in_color : Color
+// [output] out_color : Color
+// }
+const props = defineProps({
+  color_space: {
+    type: Function,
+    required: true
+  },
+  in_color: {
+    type: Object,
+    required: true
+  }
+})
+const out_color = defineModel("out_color", {required:true})
 
 const slider_width = 500;
 const slider_height = 30;
@@ -17,18 +35,21 @@ function hexToBytes(hex) {
     return bytes;
 }
 
-function hctToSrgb(hct) {
-    let argb = Hct.from(hct.hue, hct.chroma, hct.tone)
-        .argb.toString(16)
-        .slice(2);
-    let color = hexToBytes(argb);
-    color.push(255);
-    return color;
-}
+// function hctToSrgb(hct) {
+//     let argb = Hct.from(hct.hue, hct.chroma, hct.tone)
+//         .argb.toString(16)
+//         .slice(2);
+//     let color = hexToBytes(argb);
+//     color.push(255);
+//     return color;
+// }
 
 function handleXPxToColor(x) {
     let hct = { hue: (x / slider_width) * 360, chroma: 122, tone: 50 };
-    let color = hctToSrgb(hct);
+    // let color = hctToSrgb(hct);
+    let hex_color = props.color_space(hct);
+    let color = hexToBytes(hex_color);
+    color.push(255);
     return color;
 }
 
@@ -66,9 +87,11 @@ onMounted(() => {
             new_x = right_bound_relative;
         }
 
+        console.log(`new_x : ${handleTransformStyle(new_x)}`)
         handle_el.style.transform = handleTransformStyle(new_x);
 
-        emit("color", handleXPxToColor(new_x));
+        // emit("color", handleXPxToColor(new_x));
+      out_color.value = handleXPxToColor(new_x)
     });
 
     window.addEventListener("mouseup", () => {
@@ -94,7 +117,8 @@ onMounted(() => {
         ctx.putImageData(img_data, 0, 0);
     }
 
-    emit("color", handleXPxToColor(0));
+    // emit("color", handleXPxToColor(0));
+    out_color.value = handleXPxToColor(0)
 });
 </script>
 
