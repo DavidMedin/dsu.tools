@@ -6,14 +6,17 @@ import Page from "./components/Page.vue";
 import ColorSlider from "./components/ColorSlider.vue";
 import { Hct } from "@material/material-color-utilities";
 
-// Controlled by the sliders
-const hct_color = ref([0, 122, 50]);
+// Controlled by the sliders.
+// These defualt values are going to be overriden by the color sliders immediately.
+const hct_color = ref([0, 0, 0]);
 
 // Computed from hct_color whenever it changes.
-const color = computed(() => {
+// sRGB can be though of as simply RGB. I don't know much about color theory :(
+const srgb_color_hex = computed(() => {
     return hctToSrgbHex(hct_color.value);
 });
 
+// The magic function that tells the ColorSlider component how to convert the color.
 function hctToSrgbHex(hct) {
     let argb = Hct.from(hct[0], hct[1], hct[2]).argb.toString(16).slice(2);
     return argb;
@@ -27,7 +30,7 @@ function hctToSrgbHex(hct) {
             <div
                 id="color-view"
                 :style="{
-                    backgroundColor: '#' + color,
+                    backgroundColor: '#' + srgb_color_hex,
                 }"
             ></div>
 

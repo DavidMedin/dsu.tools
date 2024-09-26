@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, reactive, useTemplateRef, watch } from "vue";
+import { onMounted, reactive, useTemplateRef, watch, computed } from "vue";
 
 // Input/Output Model for the Color Slider:
 // {
@@ -29,16 +29,23 @@ const props = defineProps({
 });
 const out_color_var = defineModel({ required: true });
 
+// Only used for the Handle's background color.
+const in_color_hex_computed = computed(() => {
+    return props.color_space(props.in_color);
+});
+
+// Some constants.
 const slider_width = 500;
 const slider_height = 30;
 const handle_width = 24;
 
+const initial_handle_pos = slider_width / 2;
+
 let slider_trans_style = reactive({
-    transform: handleTransformStyle(0),
+    transform: handleTransformStyle(initial_handle_pos),
 });
 
 let pressed = false;
-// let cursorOffset = 0;
 
 function hexToBytes(hex) {
     let bytes = [];
@@ -90,45 +97,48 @@ function render(new_color, old_color) {
     }
 }
 
-const handle_el = useTemplateRef("handle-ref");
+// useTemplateRef refers to this instance of the component's slider and canvas elements.
+// If we used 'id' and 'document.getElementById' (or whatever) then all sliders and canvasas would be affected by this code.
 const slider_el = useTemplateRef("slider-ref");
 const canvas_el = useTemplateRef("color-slider-ref");
 onMounted(() => {
-    // Set the slider handlers
+    // Slider and Canvas are only defined after they are mounted into the DOM.
 
     let bound = slider_el.value.getBoundingClientRect();
     let left_bound_absolute = bound.left - handle_width / 2;
-    let right_bound_relative = slider_width; // the SVG handle for the slider is 24px wide.
 
     slider_el.value.addEventListener("mousedown", (e) => {
         pressed = true;
-        // slider.style.cursor = "grabbing";
-        // cursorOffset = e.x - handle_el.value.getBoundingClientRect().left;
+
+        // If the window is resized, the left bound of the slider will change; update it.
+        left_bound_absolute =
+            slider_el.value.getBoundingClientRect().left - handle_width / 2;
 
         let new_x = e.x - left_bound_absolute - handle_width / 2;
         slider_trans_style = {
             transform: handleTransformStyle(new_x),
         };
         out_color_var.value = handlePosXToVariable(new_x);
-        // If the window is resized, the left bound of the slider will change; update it.
-        left_bound_absolute =
-            slider_el.value.getBoundingClientRect().left - handle_width / 2;
     });
     window.addEventListener("mousemove", (e) => {
         if (!pressed) return;
         e.preventDefault();
 
+        // Move the handle within the bounds of the slider.
         // slider space [0-slider_width]
         let new_x = e.x - left_bound_absolute - handle_width / 2;
         if (0 > new_x) {
+            // if the handle is on the left of the slider...
             new_x = 0;
-        } else if (right_bound_relative < new_x) {
-            new_x = right_bound_relative;
+        } else if (slider_width < new_x) {
+            // if it is on the right of the slider...
+            new_x = slider_width;
         }
 
+        // Actually move the slider.
         slider_trans_style = { transform: handleTransformStyle(new_x) };
 
-        // out_color.value = handlePosXToHexColor(new_x);
+        // Send the new color variable to the parent component.
         out_color_var.value = handlePosXToVariable(new_x);
     });
 
@@ -136,15 +146,16 @@ onMounted(() => {
         pressed = false;
     });
 
+    // Inital render and color output. Happens once.
     render();
-    out_color_var.value = handlePosXToVariable(0);
+    out_color_var.value = handlePosXToVariable(initial_handle_pos);
 });
 
+// Whenever the parent's color changes, re-render the slider.
 watch(props.in_color, render);
 </script>
 
 <template>
-    <!-- <p>uh</p> -->
     <div ref="slider-ref" id="slider">
         <canvas
             ref="color-slider-ref"
@@ -154,21 +165,19 @@ watch(props.in_color, render);
         >
             There should be a color slide here
         </canvas>
-        <svg ref="handle-ref" id="handle" :style="slider_trans_style">
+        <svg id="handle" :style="slider_trans_style">
+            <circle
+                cx="12"
+                cy="12"
+                r="10"
+                :fill="'#' + in_color_hex_computed"
+            ></circle>
             <circle
                 cx="12"
                 cy="12"
                 r="12"
                 fill="none"
-                stroke-width="2"
-                stroke="#000"
-            ></circle>
-            <circle
-                cx="12"
-                cy="12"
-                r="10"
-                fill="none"
-                stroke-width="2"
+                stroke-width="3"
                 stroke="#fff"
             ></circle>
         </svg>
