@@ -1,26 +1,21 @@
 <!-- This file will be imported by colors.js by colors.html. -->
 
 <script setup>
-import { ref } from "vue";
+import { ref, computed } from "vue";
 import Page from "./components/Page.vue";
 import ColorSlider from "./components/ColorSlider.vue";
 import { Hct } from "@material/material-color-utilities";
 
-// let colorView = null;
-// function onColor(color) {
-//     if (colorView == null) {
-//         colorView = document.getElementById("color-view");
-//     }
-//     colorView.style.backgroundColor = `rgb(${color[0]}, ${color[1]}, ${color[2]})`;
-// }
+// Controlled by the sliders
+const hct_color = ref([0, 122, 50]);
 
-const color = ref({ hue: 0, chroma: 122, tone: 50 })
-const hueOutColor = ref('green')
+// Computed from hct_color whenever it changes.
+const color = computed(() => {
+    return hctToSrgbHex(hct_color.value);
+});
 
-function hctToSrgb(hct) {
-    let argb = Hct.from(hct.hue, hct.chroma, hct.tone)
-        .argb.toString(16)
-        .slice(2);
+function hctToSrgbHex(hct) {
+    let argb = Hct.from(hct[0], hct[1], hct[2]).argb.toString(16).slice(2);
     return argb;
 }
 </script>
@@ -29,8 +24,36 @@ function hctToSrgb(hct) {
     <Page>
         <p id="pregrid-text">Color Calculator</p>
         <div id="center">
-            <div id="color-view" :style="{'background-color': hueOutColor}"></div>
-            <ColorSlider :color_space="hctToSrgb" :in_color="color" v-model:out_color="hueOutColor" />
+            <div
+                id="color-view"
+                :style="{
+                    backgroundColor: '#' + color,
+                }"
+            ></div>
+
+            <ColorSlider
+                :color_space="hctToSrgbHex"
+                :in_color="hct_color"
+                :max_value="360"
+                :variable_index="0"
+                v-model="hct_color[0]"
+            />
+
+            <ColorSlider
+                :color_space="hctToSrgbHex"
+                :in_color="hct_color"
+                :max_value="145"
+                :variable_index="1"
+                v-model="hct_color[1]"
+            />
+
+            <ColorSlider
+                :color_space="hctToSrgbHex"
+                :in_color="hct_color"
+                :max_value="100"
+                :variable_index="2"
+                v-model="hct_color[2]"
+            />
         </div>
     </Page>
 </template>
@@ -45,7 +68,6 @@ function hctToSrgb(hct) {
 #color-view {
     width: 5rem;
     height: 5rem;
-    /* background-color: red; */
     border-radius: 1rem;
     margin: 1rem;
 }
