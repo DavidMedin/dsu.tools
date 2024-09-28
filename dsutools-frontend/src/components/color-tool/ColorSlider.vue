@@ -205,7 +205,7 @@ watch(out_color_var, (new_val, old_val) => {
     display: flex;
     flex-direction: row;
     align-items: center;
-    margin: 1rem;
+    margin: 0.25rem;
 }
 #color-slider {
     border-radius: 0.5rem;
