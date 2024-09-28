@@ -34,34 +34,109 @@ function hctToSrgbHex(hct) {
                 }"
             ></div>
 
-            <ColorSlider
-                :color_space="hctToSrgbHex"
-                :in_color="hct_color"
-                :max_value="360"
-                :variable_index="0"
-                v-model="hct_color[0]"
-            />
+            <div class="slider-div">
+                <div class="copyable-text">
+                    <div class="copy-button"></div>
+                    <input
+                        type="number"
+                        step="0.01"
+                        class="text-input"
+                        v-model="hct_color[0]"
+                    />
+                </div>
+                <ColorSlider
+                    :color_space="hctToSrgbHex"
+                    :in_color="hct_color"
+                    :max_value="360"
+                    :variable_index="0"
+                    v-model="hct_color[0]"
+                />
+            </div>
 
-            <ColorSlider
-                :color_space="hctToSrgbHex"
-                :in_color="hct_color"
-                :max_value="145"
-                :variable_index="1"
-                v-model="hct_color[1]"
-            />
+            <div class="slider-div">
+                <input
+                    type="number"
+                    step="0.01"
+                    class="text-input"
+                    v-model="hct_color[1]"
+                />
+                <ColorSlider
+                    :color_space="hctToSrgbHex"
+                    :in_color="hct_color"
+                    :max_value="145"
+                    :variable_index="1"
+                    v-model="hct_color[1]"
+                />
+            </div>
 
-            <ColorSlider
-                :color_space="hctToSrgbHex"
-                :in_color="hct_color"
-                :max_value="100"
-                :variable_index="2"
-                v-model="hct_color[2]"
-            />
+            <div class="slider-div">
+                <input
+                    type="number"
+                    step="0.01"
+                    class="text-input"
+                    v-model="hct_color[2]"
+                />
+                <ColorSlider
+                    :color_space="hctToSrgbHex"
+                    :in_color="hct_color"
+                    :max_value="100"
+                    :variable_index="2"
+                    v-model="hct_color[2]"
+                />
+            </div>
         </div>
     </Page>
 </template>
 
 <style scoped>
+.slider-div {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+.copyable-text {
+    height: 2.5em;
+    color: white;
+    background-color: var(--color-background-mute);
+    border-color: var(--color-primary);
+    border-radius: 0.4rem;
+    padding: 0.5em;
+    text-align: center;
+    display: flex;
+    align-items: center;
+}
+
+.copy-button {
+    width: 1em;
+    height: 1em;
+    padding: 0;
+    margin: 0;
+    background-color: var(--color-primary);
+    border-radius: 0.2rem;
+}
+
+.text-input {
+    width: 4em;
+    color: white;
+    background: none;
+    border: none;
+    padding: 0;
+    text-align: center;
+}
+
+/* I took this from stack overflow. Removes the 'increment' and 'decrement' buttons in firefox and chrome. */
+input[type="number"] {
+    -moz-appearance: textfield;
+    appearance: textfield;
+    margin: 0;
+}
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
 #pregrid-text {
     flex-grow: 1;
     display: flex;

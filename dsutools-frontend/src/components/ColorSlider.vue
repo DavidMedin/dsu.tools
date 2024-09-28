@@ -36,7 +36,7 @@ const in_color_hex_computed = computed(() => {
 
 // Some constants.
 const slider_width = 500;
-const slider_height = 30;
+const slider_height = 15;
 const handle_width = 24;
 
 const initial_handle_pos = slider_width / 2;
@@ -53,9 +53,16 @@ function hexToBytes(hex) {
         bytes.push(parseInt(hex.substr(c, 2), 16));
     return bytes;
 }
-function handlePosXToVariable(x) {
-    return (x / slider_width) * props.max_value;
+function truncToTwoDecimalPlaces(n) {
+    return Math.floor(n * 100) / 100;
 }
+function handlePosXToVariable(x) {
+    return truncToTwoDecimalPlaces((x / slider_width) * props.max_value);
+}
+function variableToHandlePosX(variable) {
+    return (variable * slider_width) / props.max_value;
+}
+
 function handlePosXToHexColor(x) {
     // Create the color in the user's color space.
     // It uses the color provided in props.in_color as the base,
@@ -73,6 +80,20 @@ function handlePosXToHexColor(x) {
 
 function handleTransformStyle(x) {
     return `translate(${x - slider_width - handle_width / 2}px,0px)`;
+}
+
+function moveHandle(x, old_x) {
+    if (0 > x) {
+        // if the handle is on the left of the slider...
+        x = 0;
+    } else if (slider_width < x) {
+        // if it is on the right of the slider...
+        x = slider_width;
+    }
+
+    // Actually move the slider.
+    slider_trans_style = { transform: handleTransformStyle(x) };
+    return x;
 }
 
 function render(new_color, old_color) {
@@ -127,16 +148,7 @@ onMounted(() => {
         // Move the handle within the bounds of the slider.
         // slider space [0-slider_width]
         let new_x = e.x - left_bound_absolute - handle_width / 2;
-        if (0 > new_x) {
-            // if the handle is on the left of the slider...
-            new_x = 0;
-        } else if (slider_width < new_x) {
-            // if it is on the right of the slider...
-            new_x = slider_width;
-        }
-
-        // Actually move the slider.
-        slider_trans_style = { transform: handleTransformStyle(new_x) };
+        new_x = moveHandle(new_x);
 
         // Send the new color variable to the parent component.
         out_color_var.value = handlePosXToVariable(new_x);
@@ -153,6 +165,9 @@ onMounted(() => {
 
 // Whenever the parent's color changes, re-render the slider.
 watch(props.in_color, render);
+watch(out_color_var, (new_val, old_val) => {
+    moveHandle(variableToHandlePosX(new_val));
+});
 </script>
 
 <template>
@@ -169,7 +184,7 @@ watch(props.in_color, render);
             <circle
                 cx="12"
                 cy="12"
-                r="10"
+                r="11"
                 :fill="'#' + in_color_hex_computed"
             ></circle>
             <circle
