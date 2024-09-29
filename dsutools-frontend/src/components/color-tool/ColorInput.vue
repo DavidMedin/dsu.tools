@@ -1,29 +1,29 @@
 <script setup>
 
-import { ref, computed } from "vue";
+import { ref, computed, inject} from "vue";
 import ColorSlider from "./ColorSlider.vue";
-import { Hct } from "@material/material-color-utilities";
 
 
 // Controlled by the sliders.
 // These defualt values are going to be overriden by the color sliders immediately.
-const hct_color = ref([0, 0, 0]);
+const props = defineProps({
+  color_space: {
+    type: String,
+    required : true
+  }
+})
+const color = defineModel({required : true})
 
-// Computed from hct_color whenever it changes.
+const conversions = inject("conversions")
+
+let toRGBHex = conversions[props.color_space].toRGBHex
+let fromRGBHex = conversions[props.color_space].fromRGBHex
+// Computed from 'color' whenever it changes.
 // sRGB can be though of as simply RGB. I don't know much about color theory :(
 const srgb_color_hex = computed(() => {
-    return hctToSrgbHex(hct_color.value);
+    return toRGBHex(color.value)
 });
 
-// The magic function that tells the ColorSlider component how to convert the color.
-function hctToSrgbHex(hct) {
-    let argb = Hct.from(hct[0], hct[1], hct[2]).argb.toString(16).slice(2);
-    return argb;
-}
-function SrgbToHct(srgb) {
-  let hct = Hct.fromInt(srgb)
-  return [hct.hue,hct.chroma,hct.tone]
-}
 </script>
 
 
@@ -38,21 +38,18 @@ function SrgbToHct(srgb) {
 
     <input type="text"/>
     <div class="slider-div">
-        <!-- <div class="copyable-text">
-            <div class="copy-button">copy</div> -->
             <input
                 type="number"
                 step="0.01"
                 class="text-input"
-                v-model="hct_color[0]"
+                v-model="color[0]"
             />
-        <!-- </div> -->
         <ColorSlider
-            :color_space="hctToSrgbHex"
-            :in_color="hct_color"
+            :color_space="toRGBHex"
+            :in_color="color"
             :max_value="360"
             :variable_index="0"
-            v-model="hct_color[0]"
+            v-model="color[0]"
         />
     </div>
 
@@ -61,14 +58,14 @@ function SrgbToHct(srgb) {
             type="number"
             step="0.01"
             class="text-input"
-            v-model="hct_color[1]"
+            v-model="color[1]"
         />
         <ColorSlider
-            :color_space="hctToSrgbHex"
-            :in_color="hct_color"
-            :max_value="145"
+            :color_space="toRGBHex"
+            :in_color="color"
+            :max_value="120"
             :variable_index="1"
-            v-model="hct_color[1]"
+            v-model="color[1]"
         />
     </div>
 
@@ -77,14 +74,14 @@ function SrgbToHct(srgb) {
             type="number"
             step="0.01"
             class="text-input"
-            v-model="hct_color[2]"
+            v-model="color[2]"
         />
         <ColorSlider
-            :color_space="hctToSrgbHex"
-            :in_color="hct_color"
+            :color_space="toRGBHex"
+            :in_color="color"
             :max_value="100"
             :variable_index="2"
-            v-model="hct_color[2]"
+            v-model="color[2]"
         />
     </div>
 </div>

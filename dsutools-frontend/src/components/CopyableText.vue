@@ -39,9 +39,10 @@ function copy() {
 .outer {
     display:flex;
     flex-direction: row;
-    border-color: var(--color-background-mute);
+    /* border-color: var(--color-background-mute);
     border-style: solid;
-    border-width: 0.2rem;
+    border-width: 0.2rem; */
+    background-color: var(--color-surface-lvl-1);
     border-radius: 0.25rem;
 }
 .icon {
@@ -53,9 +54,7 @@ function copy() {
     /* width: 1rem;
     height: 1rem; */
     border-radius: 0.25rem;
-    border-top-left-radius: 0;
-    border-bottom-left-radius: 0;
-    background-color: var(--color-background-mute);
+    background-color: var(--color-surface-lvl-2);
 }
 .content {
     text-align: center;

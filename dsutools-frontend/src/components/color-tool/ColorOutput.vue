@@ -1,5 +1,14 @@
 <script setup>
+import { inject } from "vue"
 import CopyableText from "../CopyableText.vue"
+
+defineProps(
+  {
+    color: {type: Array, required: true},
+    color_space: {type: String, required: true}
+  }
+)
+const conversions = inject("conversions")
 </script>
 
 <template>
@@ -11,6 +20,12 @@ import CopyableText from "../CopyableText.vue"
         </tr>
     </thead>
     <tbody>
+        <tr>
+            <td><CopyableText :text="'#'+conversions[color_space].toRGBHex(color)"/></td>
+            <td><CopyableText text="Red: 1"/></td>
+            <td><CopyableText text="Green: 2"/></td>
+            <td><CopyableText text="Blue: 3"/></td>
+        </tr>
         <tr>
             <td><CopyableText text="RGB"/></td>
             <td><CopyableText text="Red: 1"/></td>
