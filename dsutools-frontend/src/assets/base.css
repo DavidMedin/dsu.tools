@@ -32,7 +32,6 @@
     /* on primary container: hct(233, 53%, 23.79%) */
     --color-on-primary-container: #00455d;
 
-
     /* secondary: hct(233,11%,65%) */
     --color-secondary: #949fa8;
 
@@ -50,6 +49,9 @@
     --color-surface-lvl-1: #212121;
     /* surface level 2 : hct(209,1,16.8) */
     --color-surface-lvl-2: #292929;
+    /* surface level 3 : hct(209,1,21.32) */
+    --color-surface-lvl-3: #333333;
+
     --color-on-surface: #ffffff;
 }
 

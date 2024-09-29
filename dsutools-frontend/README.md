@@ -28,7 +28,7 @@ node -v # should print `v22.8.0`
 npm -v # should print `10.8.2`
 ```
 
-Then, you need to configure your instance of the repository to be an npm project.
+Then, you need to configure your instance of the repository to be an npm project. Also, whenver you need to update the NPM packages, you'll need to run `npm install` to download the new ones.
 ```sh
 npm install
 ```
@@ -44,3 +44,8 @@ npm run dev
 ```sh
 npm run build
 ```
+
+### Packages we're using:
+- Vue
+- Material 3 Colors
+- Tabler Icons : tabler.io/icons

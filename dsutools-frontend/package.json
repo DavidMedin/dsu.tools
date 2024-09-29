@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@material/material-color-utilities": "^0.3.0",
+    "@tabler/icons-vue": "^3.19.0",
     "vue": "^3.4.29"
   },
   "devDependencies": {
