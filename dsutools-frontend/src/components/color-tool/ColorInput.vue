@@ -1,90 +1,86 @@
 <script setup>
-
-import { ref, computed, inject} from "vue";
+import { ref, computed, inject } from "vue";
 import ColorSlider from "./ColorSlider.vue";
-
 
 // Controlled by the sliders.
 // Takes in an index into the array
 const props = defineProps({
-  color_space_index: {
-    type: Number,
-    required : true
-  }
-})
-const color = defineModel({required : true})
+    color_space_index: {
+        type: Number,
+        required: true,
+    },
+});
+const color = defineModel({ required: true });
 
-const color_spaces = inject("ColorSpaces")
+const color_spaces = inject("ColorSpaces");
 
-let toRGBHex = color_spaces[props.color_space].conversions.toRGBHex
-let fromRGBHex = color_spaces[props.color_space].conversions.fromRGBHex
+let toRGBHex = color_spaces[props.color_space_index].conversions.toRGBHex;
+let fromRGBHex = color_spaces[props.color_space_index].conversions.fromRGBHex;
 // Computed from 'color' whenever it changes.
 // sRGB can be though of as simply RGB. I don't know much about color theory :(
 const srgb_color_hex = computed(() => {
-    return toRGBHex(color.value)
+    return toRGBHex(color.value);
 });
-
 </script>
 
-
 <template>
-<div class="color-input">
-    <div
-        id="color-view"
-        :style="{
-            backgroundColor: '#' + srgb_color_hex,
-        }"
-    ></div>
+    <div class="color-input">
+        <div
+            id="color-view"
+            :style="{
+                backgroundColor: '#' + srgb_color_hex,
+            }"
+        ></div>
 
-    <input type="text"/>
-    <div class="slider-div">
+        <input type="text" />
+        <div class="slider-div">
             <input
                 type="number"
                 step="0.01"
                 class="text-input"
                 v-model="color[0]"
             />
-        <ColorSlider
-            :color_space="toRGBHex"
-            :in_color="color"
-            :max_value="360"
-            :variable_index="0"
-            v-model="color[0]"
-        />
-    </div>
+            <ColorSlider
+                :color_space="toRGBHex"
+                :in_color="color"
+                :max_value="360"
+                :variable_index="0"
+                v-model="color[0]"
+            />
+        </div>
 
-    <div class="slider-div">
-        <input
-            type="number"
-            step="0.01"
-            class="text-input"
-            v-model="color[1]"
-        />
-        <ColorSlider
-            :color_space="toRGBHex"
-            :in_color="color"
-            :max_value="120"
-            :variable_index="1"
-            v-model="color[1]"
-        />
-    </div>
+        <div class="slider-div">
+            <input
+                type="number"
+                step="0.01"
+                class="text-input"
+                v-model="color[1]"
+            />
+            <ColorSlider
+                :color_space="toRGBHex"
+                :in_color="color"
+                :max_value="120"
+                :variable_index="1"
+                v-model="color[1]"
+            />
+        </div>
 
-    <div class="slider-div">
-        <input
-            type="number"
-            step="0.01"
-            class="text-input"
-            v-model="color[2]"
-        />
-        <ColorSlider
-            :color_space="toRGBHex"
-            :in_color="color"
-            :max_value="100"
-            :variable_index="2"
-            v-model="color[2]"
-        />
+        <div class="slider-div">
+            <input
+                type="number"
+                step="0.01"
+                class="text-input"
+                v-model="color[2]"
+            />
+            <ColorSlider
+                :color_space="toRGBHex"
+                :in_color="color"
+                :max_value="100"
+                :variable_index="2"
+                v-model="color[2]"
+            />
+        </div>
     </div>
-</div>
 </template>
 
 <style scoped>
