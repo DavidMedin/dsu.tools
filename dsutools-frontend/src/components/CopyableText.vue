@@ -29,7 +29,7 @@ function copy() {
         <IconClipboard class="icon" />
         <!-- </div> -->
         <div class="content">
-            <p>{{ text }}</p>
+            <p unselectable="on" onselectstart="return false;">{{ text }}</p>
         </div>
     </div>
 </template>
@@ -75,5 +75,12 @@ function copy() {
 
     margin-right: 0.5rem;
     /* margin-left: 0.5rem; */
+}
+.content p {
+    -moz-user-select: none;
+    -webkit-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    -o-user-select: none;
 }
 </style>
