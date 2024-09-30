@@ -1,5 +1,6 @@
 <script setup>
 import { IconClipboard } from "@tabler/icons-vue";
+import ToolTip from "./ToolTip.vue"
 const props = defineProps({
     text: {
         required: true,
@@ -24,10 +25,9 @@ function copy() {
 </script>
 
 <template>
-    <div class="outer" @click="copy">
-        <!-- <div class="copy-btn" > -->
+    <div class="outer tooltip-haver" @click="copy">
+        <ToolTip/>
         <IconClipboard class="icon" />
-        <!-- </div> -->
         <div class="content">
             <p unselectable="on" onselectstart="return false;">{{ text }}</p>
         </div>
@@ -44,7 +44,9 @@ function copy() {
 }
 .outer:hover {
     background-color: var(--color-surface-lvl-2);
+    transform:scale(1.05)
 }
+
 .icon {
     /* width: 1rem; */
     /* height: 1rem; */
