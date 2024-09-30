@@ -31,6 +31,18 @@ const color_spaces = [
     },
     {
         name: "RGB",
+        components: ["Red", "Green", "Blue"],
+        description: "The color space of the web.",
+        conversions: {
+            fromRGBHex: (hex) => {
+                let r = parseInt(hex.slice(0, 2), 16);
+                let g = parseInt(hex.slice(2, 4), 16);
+                let b = parseInt(hex.slice(4, 6), 16);
+                return [r, g, b];
+            },
+            toRGBHex: (rgb) =>
+                rgb.map((c) => c.toString(16).padStart(2, "0")).join(""),
+        },
     },
     {
         name: "HSV",
