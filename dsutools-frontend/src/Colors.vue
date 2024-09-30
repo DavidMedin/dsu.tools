@@ -13,16 +13,45 @@ import ColorRow from "./components/color-tool/ColorRow.vue"
 //   |>ColorSlider
 // |>ColorOutput
 
-const conversions = {
-  hct: {
-    fromRGBHex: () => {
-        let hct = Hct.fromInt(srgb)
-        return [hct.hue,hct.chroma,hct.tone]
-    },
-    toRGBHex: (hct) => Hct.from(hct[0], hct[1], hct[2]).argb.toString(16).slice(2)
+// const conversions = {
+//   hct: {
+//     fromRGBHex: () => {
+//         let hct = Hct.fromInt(srgb)
+//         return [hct.hue,hct.chroma,hct.tone]
+//     },
+//     toRGBHex: (hct) => Hct.from(hct[0], hct[1], hct[2]).argb.toString(16).slice(2)
+//   }
+// }
+// provide("conversions", conversions)
+
+const color_spaces = [
+  {
+    name: "HCT",
+    components: ["Hue","Chroma","Tone"],
+    descption: "A neat little color space. Yuh",
+    conversions: {
+      fromRGBHex: () => {
+          let hct = Hct.fromInt(srgb)
+          return [hct.hue,hct.chroma,hct.tone]
+      },
+      toRGBHex: (hct) => Hct.from(hct[0], hct[1], hct[2]).argb.toString(16).slice(2)
+    }
+  },
+  {
+    name: "RGB",
+
+  },
+  {
+    name: "HSV"
+  },
+  {
+    name: "HSL"
+  },
+  {
+    name: "OKlab"
   }
-}
-provide("conversions", conversions)
+]
+provide("ColorSpaces", color_spaces)
 </script>
 
 <template>

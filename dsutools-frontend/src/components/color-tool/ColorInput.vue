@@ -5,19 +5,19 @@ import ColorSlider from "./ColorSlider.vue";
 
 
 // Controlled by the sliders.
-// These defualt values are going to be overriden by the color sliders immediately.
+// Takes in an index into the array
 const props = defineProps({
-  color_space: {
-    type: String,
+  color_space_index: {
+    type: Number,
     required : true
   }
 })
 const color = defineModel({required : true})
 
-const conversions = inject("conversions")
+const color_spaces = inject("ColorSpaces")
 
-let toRGBHex = conversions[props.color_space].toRGBHex
-let fromRGBHex = conversions[props.color_space].fromRGBHex
+let toRGBHex = color_spaces[props.color_space].conversions.toRGBHex
+let fromRGBHex = color_spaces[props.color_space].conversions.fromRGBHex
 // Computed from 'color' whenever it changes.
 // sRGB can be though of as simply RGB. I don't know much about color theory :(
 const srgb_color_hex = computed(() => {
