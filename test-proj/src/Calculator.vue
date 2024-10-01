@@ -62,12 +62,10 @@ function Operation(input)
 
 function Equals()
 {
-  var numA = cacheNum.value
-  var numB = curNumber.value
+  var numA = parseInt(cacheNum.value)
+  var numB = parseInt(curNumber.value)
   var calculation = 0
   var doCacheNum = true
-
-
 
   //check to see if equals is getting pressed over and over
   if(curOp === Operator.DONE)
