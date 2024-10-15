@@ -3,7 +3,7 @@
 import './assets/main.css'
 
 import { createApp } from 'vue'
-import App from './App.vue'
+import App from './Calculator.vue'
 
 // '#app' is a element selector that references the <div> in index.html.
 // Our Vue code will be inserted into that div.
