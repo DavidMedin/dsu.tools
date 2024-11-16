@@ -1,4 +1,4 @@
-// This file will be imported by irinapage.html
+// This file will be imported by flashcards.html
 
 import './assets/main.css'
 
