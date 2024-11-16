@@ -1,11 +1,13 @@
 <script setup>
 import Box from "./components/Box.vue";
 import Header from "./Header.vue";
+import Flashcard from "./components/Flashcard.vue";
 </script>
 
 <template>
     <main>
-        <Box id="dsu-tools" tool_name="dsu-tools"><Header style="color: var(--pink-text)">DSU TOOLS</Header></Box>
+        <h1>Welcome</h1>
+        <!-- <Box id="dsu-tools" tool_name="dsu-tools"><Header style="color: var(--pink-text)">DSU TOOLS</Header></Box>
         <Box id="calculator" tool_name="calculator"><Header>CALCULATOR</Header></Box>
         <Box id="events" tool_name="events"><Header>EVENTS</Header></Box>
         <Box id="puzzle" tool_name="puzzle"><Header>PUZZLE</Header></Box>
@@ -14,7 +16,7 @@ import Header from "./Header.vue";
             <Box id="molecules-calculator" tool_name="molecules-calculator"><Header>MOLECULES CALCULATOR</Header></Box>
         </div>
         <Box id="todays-menu" tool_name="todays-menu"><Header>TODAYS MENU</Header></Box>
-        <Box id="flashcards"  tool_name="flashcards"><Header>FLASHCARDS</Header></Box>
+        <Box id="flashcards"  tool_name="flashcards"><Header>FLASHCARDS</Header></Box> -->
     </main>
 </template>
 

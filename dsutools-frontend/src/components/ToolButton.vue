@@ -12,7 +12,7 @@ defineProps({
 </script>
 
 <template>
-    <a id="outer-link" v-bind:href="tool_link || 'irina.html'">
+    <a id="outer-link" v-bind:href="tool_link">
         <div class="round-box">
             <p id="title">{{ tool_name || "MISSING TOOL NAME" }}</p>
             <!-- <p> lorem50</p> -->

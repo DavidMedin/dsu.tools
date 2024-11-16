@@ -3,6 +3,6 @@
 import './assets/main.css'
 
 import { createApp } from 'vue'
-import IrinaPage from './IrinaPage.vue'
+import StudyBuddy from './StudyBuddy.vue'
 
-createApp(IrinaPage).mount('#irinapage')
+createApp(StudyBuddy).mount('#flashcards')
