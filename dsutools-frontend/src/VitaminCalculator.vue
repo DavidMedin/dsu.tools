@@ -3,14 +3,14 @@ import {ref, computed} from 'vue'
 import Page from "./components/Page.vue";
 
 //dictonary for storing information;
-const symptom = ref("tired");
+const symptom = ref(null);
 const symptoms = ref(["tired", "anxious", ])
 
 const vitamins = ref([
     {vitamin: "A", High: ["happy", "anxious"], Low: [symptoms.value[1], symptoms.value[0]]},
     {vitamin: "C", High: [symptoms.value[0], symptoms.value[1]], Low: [symptoms.value[1], symptoms.value[0]]},
-    {vitamin: "D", High: ["tired", "anxious"], Low: [symptoms.value[1], symptoms.value[0]]},
-    {vitamin: "E", High: ["tired", "anxious"], Low: [symptoms.value[1], symptoms.value[0]]},
+    {vitamin: "D", High: ["tired", "anxious"], Low: [symptoms.value[1]]},
+    {vitamin: "E", High: ["tired", "anxious"], Low: [symptoms.value[1]]},
     {vitamin: "K", High: ["tired", "anxious"], Low: [symptoms.value[1], symptoms.value[0]]},
     {vitamin: "B-Thiamine", High: ["tired", "anxious"], Low: [symptoms.value[1], symptoms.value[0]]},
     {vitamin: "B-Riboflavin", High: ["tired", "anxious"], Low: [symptoms.value[1], symptoms.value[0]]},
@@ -24,16 +24,16 @@ const vitamins = ref([
 
 
 const filteredVitaminsHigh = computed(() => {
-    return symptom.value === ""
-    ? null
+    return symptom.value === null
+    ? vitamins.value
     : vitamins.value.filter((v => checkStrings(v.High, symptom.value))) 
-})
+});
 
 const filteredVitaminsLow = computed(() => {
-    return symptom.value === ""
-    ? null
+    return symptom.value === null
+    ? vitamins.value
     : vitamins.value.filter((v => checkStrings(v.Low, symptom.value))) 
-})
+});
 
 function checkStrings(strings, string){
     return strings.some(s => s == string);
@@ -47,11 +47,11 @@ function checkStrings(strings, string){
             <div id="dropdown">
                 <p>dropdown menu to select symptom. On click it shows
                     2 list of matching symptoms for either too much or too little of a vitamin.</p>
-                    <label for="symptoms">Choose a vitamin:</label>
-                    <select id="symptoms">
-                        <option value="null"></option>
-                        <option v-for="v in vitamins" :key="v.vitamin">
-                            {{ v.vitamin }}
+                    <label for="symptoms">Choose a Symptom:</label>
+                    <select v-model="symptom">
+                        <option :value="null"></option>
+                        <option v-for="s in symptoms" :key="s" :value="s">
+                            {{ s }}
                         </option>
                     </select>
             </div>
