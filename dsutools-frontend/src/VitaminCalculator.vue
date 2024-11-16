@@ -60,36 +60,40 @@ function checkStrings(strings, string) {
 </script>
 
 <template>
-    <Page >
-        <div>
-            <div id="dropdown">
-                <p>dropdown menu to select symptom. On click it shows
-                    2 list of matching symptoms for either too much or too little of a vitamin.</p>
-                    <label for="symptoms">Choose a Symptom:</label>
-                    <select v-model="symptom">
-                        <option :value="null"></option>
-                        <option v-for="s in symptoms" :key="s" :value="s">
-                            {{ s }}
-                        </option>
-                    </select>
-            </div>
-            <div id="low">
-                <h3>list of low vitamins</h3>
-                <ul>
-                    <li v-for="v in filteredVitaminsLow" :key="v.vitamin">
-                        <span>{{ v.vitamin }}</span>
-                    </li>
-                </ul>
-            </div>
-            <div id="high">
-                <h3>list of high vitamins</h3>
-                <ul>
-                    <li v-for="v in filteredVitaminsHigh" :key="v.vitamin">
-                        <span>{{ v.vitamin }}</span>
-                    </li>
-                </ul>
-            </div>
-        </div>
+    <Page>
+        <div style="display:flex; gap:2.5%; width: 100%" :id="page-contents">
+            <div style="width:20%" id="left-side">
+                <div id="dropdown">
+                    <p>dropdown menu to select symptom. On click it shows
+                        2 list of matching symptoms for either too much or too little of a vitamin.</p>
+                        <label for="symptoms">Choose a Symptom:</label>
+                        <select v-model="symptom">
+                            <option :value="null"></option>
+                            <option v-for="s in symptoms" :key="s" :value="s">
+                                {{ s }}
+                            </option>
+                        </select>
+                </div>
+            </div>  <!--End of left-side.-->
+            <div style="display:flex; gap: 2.5%; width:80%" id="right-side">
+                <div style="width:50%" id="low">
+                    <h3>list of low vitamins</h3>
+                    <ul>
+                        <li v-for="v in filteredVitaminsLow" :key="v.vitamin">
+                            <span>{{ v.vitamin }}</span>
+                        </li>
+                    </ul>
+                </div>
+                <div style="width:50%" id="high">
+                    <h3>list of high vitamins</h3>
+                    <ul>
+                        <li v-for="v in filteredVitaminsHigh" :key="v.vitamin">
+                            <span>{{ v.vitamin }}</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>  <!--End of right-side.-->
+        </div>  <!--End of page-content.-->  
     </Page>
 </template>
 
