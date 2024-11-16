@@ -21,8 +21,8 @@ const color_spaces = [
         components: ["Hue", "Chroma", "Tone"],
         description: "A neat little color space. Yuh",
         conversions: {
-            fromRGBHex: () => {
-                let hct = Hct.fromInt(srgb);
+            fromRGBHex: (hex) => {
+                let hct = Hct.fromInt(hex);
                 return [hct.hue, hct.chroma, hct.tone];
             },
             toRGBHex: (hct) =>

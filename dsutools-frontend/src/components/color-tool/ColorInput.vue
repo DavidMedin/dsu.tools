@@ -14,12 +14,20 @@ const color = defineModel({ required: true });
 
 const color_spaces = inject("ColorSpaces");
 
-let toRGBHex = color_spaces[props.color_space_index].conversions.toRGBHex;
-let fromRGBHex = color_spaces[props.color_space_index].conversions.fromRGBHex;
+let toRGBHex = computed(() => {
+    console.log("Computed toRGBHex!");
+    return color_spaces[props.color_space_index].conversions.toRGBHex;
+});
+let fromRGBHex = computed(
+    () => color_spaces[props.color_space_index].conversions.fromRGBHex,
+);
 // Computed from 'color' whenever it changes.
 // sRGB can be though of as simply RGB. I don't know much about color theory :(
 const srgb_color_hex = computed(() => {
-    return toRGBHex(color.value);
+    return color_spaces[props.color_space_index].conversions.toRGBHex(
+        color.value,
+    );
+    // return toRGBHex(color.value);
 });
 </script>
 
