@@ -2,41 +2,59 @@
 import {ref, computed} from 'vue'
 import Page from "./components/Page.vue";
 
-//dictonary for storing information;
 const symptom = ref(null);
-const symptoms = ref(["tired", "anxious", ])
 
+
+//stores all vitamin symptoms
 const vitamins = ref([
-    {vitamin: "A", High: ["happy", "anxious"], Low: [symptoms.value[1], symptoms.value[0]]},
-    {vitamin: "C", High: [symptoms.value[0], symptoms.value[1]], Low: [symptoms.value[1], symptoms.value[0]]},
-    {vitamin: "D", High: ["tired", "anxious"], Low: [symptoms.value[1]]},
-    {vitamin: "E", High: ["tired", "anxious"], Low: [symptoms.value[1]]},
-    {vitamin: "K", High: ["tired", "anxious"], Low: [symptoms.value[1], symptoms.value[0]]},
-    {vitamin: "B-Thiamine", High: ["tired", "anxious"], Low: [symptoms.value[1], symptoms.value[0]]},
-    {vitamin: "B-Riboflavin", High: ["tired", "anxious"], Low: [symptoms.value[1], symptoms.value[0]]},
-    {vitamin: "B-Niacin", High: ["tired", "anxious"], Low: [symptoms.value[1], symptoms.value[0]]},
-    {vitamin: "B-Pantothenic Acid", High: ["tired", "anxious"], Low: [symptoms.value[1], symptoms.value[0]]},
-    {vitamin: "B-Biotin", High: ["tired", "anxious"], Low: [symptoms.value[1], symptoms.value[0]]},
-    {vitamin: "B6", High: ["tired", "anxious"], Low: [symptoms.value[1], symptoms.value[0]]},
-    {vitamin: "B12", High: ["tired", "anxious"], Low: [symptoms.value[1], symptoms.value[0]]},
-    {vitamin: "B-Folate", High: ["tired", "anxious"], Low: [symptoms.value[1], symptoms.value[0]]}
+    {vitamin: "A", High: ["happy", "anxious"], Low: ["tired", "anxious"]},
+    {vitamin: "C", High: ["tired", "anxious"], Low: ["tired", "anxious"]},
+    {vitamin: "D", High: ["tired", "anxious"], Low: ["tired", "anxious"]},
+    {vitamin: "E", High: ["tired", "anxious"], Low: ["tired", "anxious"]},
+    {vitamin: "K", High: ["tired", "anxious"], Low: ["tired", "anxious"]},
+    {vitamin: "B-Thiamine", High: ["tired", "anxious"], Low: ["tired", "anxious"]},
+    {vitamin: "B-Riboflavin", High: ["tired", "anxious"], Low: ["tired", "anxious"]},
+    {vitamin: "B-Niacin", High: ["tired", "anxious"], Low: ["tired", "anxious"]},
+    {vitamin: "B-Pantothenic Acid", High: ["tired", "anxious"], Low: ["tired", "anxious"]},
+    {vitamin: "B-Biotin", High: ["tired", "anxious"], Low: ["tired", "anxious"]},
+    {vitamin: "B6", High: ["tired", "anxious"], Low: ["tired", "anxious"]},
+    {vitamin: "B12", High: ["tired", "anxious"], Low: ["tired", "anxious"]},
+    {vitamin: "B-Folate", High: ["tired", "anxious"], Low: ["tired", "anxious"]}
 ])
 
 
+
+// Dynamically derive symptoms from vitamins
+const symptoms = computed(() => {
+    const uniqueSymptoms = new Set();
+    vitamins.value.forEach((v) => {
+        v.High.forEach((symptom) => uniqueSymptoms.add(symptom));
+        v.Low.forEach((symptom) => uniqueSymptoms.add(symptom));
+    });
+    return Array.from(uniqueSymptoms);
+});
+
+
+
+//Filters vitmain list to just the vitmains that contain the selected high symptom
 const filteredVitaminsHigh = computed(() => {
     return symptom.value === null
     ? vitamins.value
     : vitamins.value.filter((v => checkStrings(v.High, symptom.value))) 
 });
 
+
+
+//Filters vitmain list to just the vitmains that contain the selected low symptom
 const filteredVitaminsLow = computed(() => {
     return symptom.value === null
     ? vitamins.value
     : vitamins.value.filter((v => checkStrings(v.Low, symptom.value))) 
 });
 
-function checkStrings(strings, string){
-    return strings.some(s => s == string);
+function checkStrings(strings, string) {
+    if (!Array.isArray(strings)) return false; // Safeguard against invalid input
+    return strings.some((s) => s === string);
 }
 
 </script>
