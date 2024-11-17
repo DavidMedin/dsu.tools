@@ -1,8 +1,8 @@
 #[macro_use]
 extern crate rocket;
 use rocket::fs::FileServer;
-use rocket::serde::json::{self, Json};
-use rocket::serde::{Deserialize, Serialize};
+use rocket::http::Status;
+use rocket::serde::{json::Json, Deserialize, Serialize};
 
 #[derive(Deserialize, Debug)]
 struct User {
@@ -12,29 +12,28 @@ struct User {
 
 #[derive(Serialize, Debug)]
 struct LoginResponse {
-    success: bool,
-    message: String,
+    token: String,
 }
 
 // v------ This is a Function Macro in Rust. It is some code that the Rocket library
 //         Defines to make it easier to make a route.
 #[post("/login", format = "application/json", data = "<user>")]
-fn login(user: Json<User>) -> String {
+fn login(user: Json<User>) -> Result<Json<LoginResponse>, Status> {
+    if user.username != "admin" || user.password != "Password1!" {
+        return Err(Status::Unauthorized);
+    }
+
     let response = LoginResponse {
-        success: true,
-        message: format!("Hello, {}!", user.username),
+        token: "A big long token".to_string(),
     };
-    return json::to_string(&response).unwrap();
+    return Ok(Json(response));
 }
 
 // If the login request doesn't have the corrent user information required,...
 #[post("/login", rank = 2)]
-fn failed_login() -> String {
-    let response = LoginResponse {
-        success: false,
-        message: "Failed to login!".to_string(),
-    };
-    return json::to_string(&response).unwrap();
+fn failed_login() -> Status {
+    // TODO: pick better error codes.
+    return Status::Unauthorized;
 }
 
 // 'rocket:main' is another macro that tells Rocket that this is our main function.
