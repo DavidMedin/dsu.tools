@@ -40,6 +40,7 @@ onMounted(() => {
                 })
                 .then((data) => {
                     console.log(data);
+                    window.location.replace("/");
                 })
                 .catch((error) => {
                     console.error("Error: ", error);
