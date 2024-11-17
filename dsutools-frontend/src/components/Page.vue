@@ -20,9 +20,14 @@ import Header from "./Header.vue";
     display: flex;
     flex-direction: column;
     min-height: 100vh;
+    height: 100vh; /* Full viewport height */
+    width: 100vw; /* Full viewport width */
 }
 
 main {
+    display: flex;
+    justify-content: center;
+    align-items: center;
     flex-grow: 1;
 }
 </style>
