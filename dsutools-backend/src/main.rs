@@ -4,50 +4,6 @@ use rocket::fs::FileServer;
 use rocket::serde::json::{self, Json};
 use rocket::serde::{Deserialize, Serialize};
 
-// #[derive(Debug)]
-// enum LoginError {
-//     Unauthorized,
-//     MalformedRequest,
-// }
-// #[rocket::async_trait]
-// impl<'r> FromRequest<'r> for User {
-//     type Error = LoginError;
-
-//     async fn from_request(request: &'r Request<'_>) -> rocket::request::Outcome<Self, Self::Error> {
-//         // Extract the 'username' element from the HTTP Header.
-//         // let maybe_username: Option<&str> = request.headers().get_one("username");
-//         // let maybe_password: Option<&str> = request.headers().get_one("password");
-//         request.
-
-//         // maybe_username is an Option, which either is Some or None. If it is Some, it will contain a &str,
-//         // otherwise it is None. None is like a null pointer in C, except better.
-
-//         // 'if let' is a Rust construct that allows us to check if an Option is Some or None and extract the value stored by Some.
-//         if let Some(username) = maybe_username {
-//             // If the request has the 'username' element in the HTTP Header, then...
-
-//             if let Some(password) = maybe_password {
-//                 return rocket::request::Outcome::Success(User {
-//                     username: username.to_string(),
-//                     password: password.to_string(),
-//                 });
-//             } else {
-//                 return rocket::request::Outcome::Error((
-//                     Status::Unauthorized,
-//                     LoginError::MalformedRequest,
-//                 ));
-//             }
-//         } else {
-//             // If the request doesn't have the 'username' element in the HTTP Header, then...
-//             //
-//             return rocket::request::Outcome::Error((
-//                 Status::Unauthorized,
-//                 LoginError::MalformedRequest,
-//             ));
-//         }
-//     }
-// }
-
 #[derive(Deserialize, Debug)]
 struct User {
     username: String,
@@ -89,7 +45,7 @@ async fn main() -> Result<(), rocket::Error> {
     // we've defined above, and where to mount it.
     // Finally, it runs the server until the server is stopped.
     let _rocket = rocket::build()
-        // .mount("/", routes![index])
+        .mount("/", routes![login, failed_login])
         .mount("/", FileServer::from("../dsutools-frontend/dist/"))
         .launch()
         .await?;

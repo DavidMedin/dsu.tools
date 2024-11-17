@@ -1,96 +1,70 @@
 <script setup>
-import Page from './components/Page.vue';
-import { onMounted } from 'vue';
+import Page from "./components/Page.vue";
+import { onMounted } from "vue";
 
-// document.getElementById('login-form').addEventListener('submit', function(event){
-//     event.preventDefault();
-
-//     let username = document.getElementById("username");
-//     let password = document.getElementById("password");
-//     const formData = new FormData(this);
-//     console.log(formData);
-
-//     // fetch('/login', {
-//     //     method: 'POST',
-//     //     body: JSON.stringify(formData.username, formData.password)
-//     // })
-//     // .then(response => {
-//     //     if (!response.success)
-//     //     {
-//     //     throw new Error('Not ok');
-//     //     }
-//     // })
-//     // .then(data => {
-//     //     console.log(data);
-//     // })
-//     // .catch(error => {
-//     //     console.error('Error: ', error);
-//     // });
-// });
-
-onMounted( () =>
-{
+onMounted(() => {
     let loginForm = document.getElementById("login-form");
 
     loginForm.addEventListener("submit", (e) => {
-    e.preventDefault();
+        e.preventDefault();
 
-    let username = document.getElementById("username");
-    let password = document.getElementById("password");
+        let username = document.getElementById("username");
+        let password = document.getElementById("password");
 
-    if (username.value == "" || password.value == "") {
-        alert("Ensure you input a value in both fields!");
-    } else {
-        // perform operation with form input
-        alert("This form has been successfully submitted!");
-        console.log(
-        `This form has a username of ${username.value} and password of ${password.value}`
-        );
+        if (username.value == "" || password.value == "") {
+            alert("Ensure you input a value in both fields!");
+        } else {
+            // perform operation with form input
+            // alert("This form has been successfully submitted!");
+            console.log(
+                `This form has a username of ${username.value} and password of ${password.value}`,
+            );
 
-        let formData = {
-            username: username.value,
-            password: password.value
-        };
+            let formData = {
+                username: username.value,
+                password: password.value,
+            };
 
-        fetch('/login', {
-            method: 'POST',
-            body: JSON.stringify(formData)
-        })
-        .then(response => {
-            if (!response.success)
-            {
-                throw new Error('Not ok');
-            }
-        })
-        .then(data => {
-            console.log(data);
-        })
-        .catch(error => {
-            console.error('Error: ', error);
-        });
+            fetch("/login", {
+                method: "POST",
+                body: JSON.stringify(formData),
+                headers: {
+                    "Content-Type": "application/json",
+                },
+            })
+                .then((response) => {
+                    if (!response.ok) {
+                        throw new Error("Not ok");
+                    }
+                    return response.json();
+                })
+                .then((data) => {
+                    console.log(data);
+                })
+                .catch((error) => {
+                    console.error("Error: ", error);
+                });
 
-        username.value = "";
-        password.value = "";
-    }
-    });}
-)
-
+            username.value = "";
+            password.value = "";
+        }
+    });
+});
 </script>
 
 <template>
     <Page>
         <form id="login-form" class="round-box">
             <label for="username">Username:</label>
-            <input type="text" id="username" name="username" required>
+            <input type="text" id="username" name="username" required />
             <label for="password">Password:</label>
-            <input type="password" id="password" name="password" required>
+            <input type="password" id="password" name="password" required />
             <button type="submit">Login</button>
         </form>
     </Page>
 </template>
 
 <style scoped>
-
 .round-box {
     border-color: var(--color-primary);
     border-width: 0.2em;
