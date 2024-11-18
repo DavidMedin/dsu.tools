@@ -1,0 +1,8 @@
+[default]
+
+[dependencies.rocket_db_pools]
+version = "0.2.0"
+features = ["sqlx_sqlite"]
+
+[default.databases.dsutools_db]
+url = "../database/dsutools.sqlite"

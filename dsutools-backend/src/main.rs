@@ -1,8 +1,16 @@
 #[macro_use]
 extern crate rocket;
+
 use rocket::fs::FileServer;
 use rocket::http::Status;
 use rocket::serde::{json::Json, Deserialize, Serialize};
+
+use rocket_db_pools::sqlx::{self, Row};
+use rocket_db_pools::{Connection, Database};
+
+#[derive(Database)]
+#[database("dsutools_db")]
+struct DsuToolsDB(sqlx::SqlitePool);
 
 #[derive(Deserialize, Debug)]
 struct User {
@@ -18,11 +26,16 @@ struct LoginResponse {
 // v------ This is a Function Macro in Rust. It is some code that the Rocket library
 //         Defines to make it easier to make a route.
 #[post("/login", format = "application/json", data = "<user>")]
-fn login(user: Json<User>) -> Result<Json<LoginResponse>, Status> {
-    if user.username != "admin" || user.password != "Password1!" {
-        return Err(Status::Unauthorized);
-    }
-
+async fn login(
+    user: Json<User>,
+    mut db: Connection<DsuToolsDB>,
+) -> Result<Json<LoginResponse>, Status> {
+    _ = sqlx::query("SELECT * FROM users WHERE username = ? AND password_hash = ?")
+        .bind(&user.username)
+        .bind(&user.password)
+        .fetch_one(&mut **db)
+        .await
+        .map_err(|_| Status::Unauthorized)?;
     let response = LoginResponse {
         token: "A big long token".to_string(),
     };
@@ -44,6 +57,7 @@ async fn main() -> Result<(), rocket::Error> {
     // we've defined above, and where to mount it.
     // Finally, it runs the server until the server is stopped.
     let _rocket = rocket::build()
+        .attach(DsuToolsDB::init())
         .mount("/", routes![login, failed_login])
         .mount("/", FileServer::from("../dsutools-frontend/dist/"))
         .launch()
