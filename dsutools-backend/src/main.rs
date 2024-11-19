@@ -5,7 +5,7 @@ extern crate rocket;
 // Rocket (our web framework)
 use rocket::fs::FileServer;
 use rocket::http::{CookieJar, Status};
-use rocket::serde::{json::Json, Deserialize, Serialize};
+use rocket::serde::{json::Json, Deserialize};
 
 use rocket_db_pools::sqlx::{self, Row};
 use rocket_db_pools::{Connection, Database};
@@ -89,11 +89,6 @@ struct User {
     password: String,
 }
 
-#[derive(Serialize, Debug)]
-struct LoginResponse {
-    token: String,
-}
-
 // v------ This is a Function Macro in Rust. It is some code that the Rocket library
 //         Defines to make it easier to make a route.
 #[post("/login", format = "application/json", data = "<user>")]
@@ -101,7 +96,7 @@ async fn login(
     user: Json<User>,
     mut db: Connection<DsuToolsDB>,
     cookies: &CookieJar<'_>,
-) -> Result<Json<LoginResponse>, Status> {
+) -> Status {
     // This function returns a Json<LoginResponse> on success or a Status code on failure.
 
     // 1. Test to see if this user exists and has this password.
@@ -118,7 +113,7 @@ async fn login(
         Ok(row) => row, // the variable 'user_row' will be set to the value of 'row' if the query was successful.
         Err(_) => {
             // If the query fails, return a HTTP 401 Unauthorized status code.
-            return Err(Status::Unauthorized);
+            return Status::Unauthorized;
         }
     };
 
@@ -141,11 +136,11 @@ async fn login(
         .unwrap(); // TODO: don't unwrap. Handle this error.
 
     //6. Add the token to the session cookie.
+    //TODO: Make this secure.
     cookies.add(("session", token.clone()));
 
-    let response = LoginResponse { token: token };
-
-    return Ok(Json(response));
+    // TODO: Remove token resonse.
+    return Status::Ok;
 }
 
 // If the login request doesn't have the corrent user information required,...
@@ -155,14 +150,53 @@ fn failed_login() -> Status {
     return Status::Unauthorized;
 }
 
-#[post("/logout")]
-fn logout() -> Status {
-    return Status::ImATeapot;
-}
+// #[get("/logout", format = "application/json", data = "<user>")]
+// fn logout() -> Status {
+//     return Status::ImATeapot;
+// }
 
-#[post("/register")]
-fn register() -> Status {
-    return Status::ImATeapot;
+#[post("/register", format = "application/json", data = "<user>")]
+async fn register(
+    user: Json<User>,
+    mut db: Connection<DsuToolsDB>,
+    cookies: &CookieJar<'_>,
+) -> Status {
+    // 1. Test to see if this user already exists.
+    if let Some(_) = get_user_id(&mut db, &user.username).await {
+        return Status::ImATeapot;
+    }
+
+    // 2. If the uesr doesn't exist, create a new user.
+    let query = sqlx::query("INSERT INTO Users (username, password_hash) VALUES (?, ?)")
+        .bind(&user.username)
+        .bind(&user.password);
+    let query_result = query.fetch_one(&mut **db).await;
+    let user_id = match query_result {
+        Ok(row) => row.get("id"),
+        Err(e) => {
+            eprintln!("Failed to register user : {}", e);
+            return Status::ImATeapot;
+        }
+    };
+
+    // 3. Generate a new session token.
+    let mut token: String = new_session_token();
+
+    // 4. Test to see if this session_token exists in the database.
+    //    Regenerate the token if it already exists.
+    while is_token_authenticated(&mut db, user_id, &token).await {
+        // If the token already exists, generate a new one.
+        token = new_session_token();
+    }
+
+    // 5. Register the token in the database.
+    register_session_token(&mut db, user_id, &token)
+        .await
+        .unwrap(); // TODO: don't unwrap. Handle this error.
+                   // 6. Log the user in
+
+    cookies.add(("session", token.clone()));
+    return Status::Ok;
 }
 
 // 'rocket::main' is another macro that tells Rocket that this is our main function.
@@ -174,7 +208,7 @@ async fn main() -> Result<(), rocket::Error> {
     // Finally, it runs the server until the server is stopped.
     let _rocket = rocket::build()
         .attach(DsuToolsDB::init()) // Use this database.
-        .mount("/", routes![login, failed_login, logout, register])
+        .mount("/", routes![login, failed_login, register])
         .mount("/", FileServer::from("../dsutools-frontend/dist/"))
         .launch()
         .await?;
