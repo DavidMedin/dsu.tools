@@ -2,14 +2,82 @@
 extern crate rocket;
 
 // Importing libraries ====================
+// Rocket (our web framework)
 use rocket::fs::FileServer;
-use rocket::http::Status;
+use rocket::http::{CookieJar, Status};
 use rocket::serde::{json::Json, Deserialize, Serialize};
 
-use rocket_db_pools::sqlx;
+use rocket_db_pools::sqlx::{self, Row};
 use rocket_db_pools::{Connection, Database};
 
+// Random Numbers
+use rand::{distributions::Alphanumeric, Rng};
 // =========================================
+
+// Session tokens are 128 characters long with alphanumberic (a-Z, 0-9) characters.
+fn new_session_token() -> String {
+    let s: String = rand::thread_rng()
+        .sample_iter(&Alphanumeric)
+        .take(128)
+        .map(char::from)
+        .collect();
+    return s;
+}
+
+async fn get_user_id(db: &mut Connection<DsuToolsDB>, username: &String) -> Option<i64> {
+    // Generate a SQL query
+    let query = sqlx::query("SELECT * FROM Users WHERE username = ?").bind(username);
+
+    // Perform the query to the database.
+    let query_result = query.fetch_one(&mut ***db).await;
+
+    match query_result {
+        Ok(result_row) => {
+            let id: i64 = result_row.get("id");
+            return Some(id);
+        }
+        Err(e) => {
+            eprintln!("Failed to get user from username : {}", e);
+            return None;
+        }
+    }
+}
+
+async fn is_token_authenticated(
+    db: &mut Connection<DsuToolsDB>,
+    user_id: i64,
+    token: &String,
+) -> bool {
+    // Generate a SQL query
+    let query = sqlx::query("SELECT * FROM SessionTokens WHERE user_id = ? AND token = ?")
+        .bind(user_id)
+        .bind(token);
+
+    // Ask the database the question
+    let query_result = query.fetch_one(&mut ***db).await;
+
+    return query_result.is_ok();
+}
+
+async fn register_session_token(
+    db: &mut Connection<DsuToolsDB>,
+    user_id: i64,
+    token: &String,
+) -> Result<(), ()> {
+    // Generate a SQL query
+    let query = sqlx::query("INSERT INTO SessionTokens (user_id, token) VALUES (?, ?)")
+        .bind(user_id)
+        .bind(token);
+
+    // Ask the database the question
+    let query_result = query.execute(&mut ***db).await;
+
+    if let Err(e) = query_result {
+        eprintln!("Failed to register token : {}", e);
+        return Err(());
+    }
+    return Ok(());
+}
 
 #[derive(Database)] // A Rust macro that operates on the DsuToolsDB struct.
 #[database("dsutools_db")] // Links the DsuToolsDB struct to the "dsutools_db" database mentioned in the Rocket.toml file.
@@ -32,9 +100,11 @@ struct LoginResponse {
 async fn login(
     user: Json<User>,
     mut db: Connection<DsuToolsDB>,
+    cookies: &CookieJar<'_>,
 ) -> Result<Json<LoginResponse>, Status> {
     // This function returns a Json<LoginResponse> on success or a Status code on failure.
 
+    // 1. Test to see if this user exists and has this password.
     // Generate a SQL query
     let query = sqlx::query("SELECT * FROM users WHERE username = ? AND password_hash = ?")
         .bind(&user.username)
@@ -44,15 +114,37 @@ async fn login(
     let query_result = query.fetch_one(&mut **db).await; // Asyncronous Rust keyword. This function will wait for the database to respond.
 
     // query_result is a Result type, which can be Ok(<some value>) or Err(<some value>).
-    // If it is an error, ...
-    if let Err(_) = query_result {
-        // If the query fails, return a HTTP 401 Unauthorized status code.
-        return Err(Status::Unauthorized);
+    let user_row = match query_result {
+        Ok(row) => row, // the variable 'user_row' will be set to the value of 'row' if the query was successful.
+        Err(_) => {
+            // If the query fails, return a HTTP 401 Unauthorized status code.
+            return Err(Status::Unauthorized);
+        }
+    };
+
+    // 2. Get the user's ID from the result.
+    let user_id: i64 = user_row.get("id");
+
+    // 3. Generate a new session token.
+    let mut token: String = new_session_token();
+
+    // 4. Test to see if this session_token exists in the database.
+    //    Regenerate the token if it already exists.
+    while is_token_authenticated(&mut db, user_id, &token).await {
+        // If the token already exists, generate a new one.
+        token = new_session_token();
     }
 
-    let response = LoginResponse {
-        token: "A big long token".to_string(),
-    };
+    // 5. Register the token in the database.
+    register_session_token(&mut db, user_id, &token)
+        .await
+        .unwrap(); // TODO: don't unwrap. Handle this error.
+
+    //6. Add the token to the session cookie.
+    cookies.add(("session", token.clone()));
+
+    let response = LoginResponse { token: token };
+
     return Ok(Json(response));
 }
 
@@ -61,6 +153,16 @@ async fn login(
 fn failed_login() -> Status {
     // TODO: pick better error codes.
     return Status::Unauthorized;
+}
+
+#[post("/logout")]
+fn logout() -> Status {
+    return Status::ImATeapot;
+}
+
+#[post("/register")]
+fn register() -> Status {
+    return Status::ImATeapot;
 }
 
 // 'rocket::main' is another macro that tells Rocket that this is our main function.
@@ -72,7 +174,7 @@ async fn main() -> Result<(), rocket::Error> {
     // Finally, it runs the server until the server is stopped.
     let _rocket = rocket::build()
         .attach(DsuToolsDB::init()) // Use this database.
-        .mount("/", routes![login, failed_login])
+        .mount("/", routes![login, failed_login, logout, register])
         .mount("/", FileServer::from("../dsutools-frontend/dist/"))
         .launch()
         .await?;

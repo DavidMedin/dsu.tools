@@ -12,3 +12,10 @@ CREATE TABLE Users (
 	username TEXT NOT NULL,
 	password_hash TEXT NOT NULL
 );
+
+CREATE TABLE SessionTokens (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    token TEXT NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES Users(id)
+);
