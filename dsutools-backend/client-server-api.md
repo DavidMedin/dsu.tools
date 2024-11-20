@@ -7,15 +7,12 @@ Request:
 ```json
 {
     "username": "the_username",
-    "password": "the_password"
+    "token": "a big nasty token"
 }
 ```
 Response:
-```json
-{
-    "token": "big_nasty_token"
-}
-```
+- `200` (Ok): A session token as a cookie.
+- `500` (Internal Server Error): Something went wrong, likely with the database.
 
 ### POST `/register`
 Request:
@@ -26,20 +23,19 @@ Request:
 }
 ```
 Response:
-```json
-{
-    "token": "big_nasty_token"
-}
-```
+- `201` (Created): A session token as a cookie.
+- `409` (Conflict): Username already taken.
+- `500` (Internal Server Error): Something went wrong, likely with the database.
 
 
 ### POST `/logout`
 Request:
 ```json
 {
-  "token": "big_nasty_token",
-  "username": "the_username"
+  "username": "the_username",
+  "token": "big_nasty_token"
 }
 ```
-Response:\
-No body.
+Response:
+- `200` (Ok): Nothing,
+- `500` (Internal Server Error): Something went wrong, likely with the database.
