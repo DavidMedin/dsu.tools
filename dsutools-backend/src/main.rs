@@ -244,11 +244,20 @@ async fn register(
     let query = sqlx::query("INSERT INTO Users (username, password_hash) VALUES (?, ?)")
         .bind(&user.username)
         .bind(&user.password);
-    let query_result = query.fetch_one(&mut **db).await;
-    let user_id = match query_result {
+    let query_result = query.execute(&mut **db).await;
+
+    if let Err(e) = query_result {
+        eprintln!("Failed to register a user : {}", e);
+        return Status::ImATeapot;
+    }
+
+    let query_id = sqlx::query("SELECT * FROM Users WHERE username = ?").bind(&user.username);
+    let query_id_result = query_id.fetch_one(&mut **db).await;
+
+    let user_id = match query_id_result {
         Ok(row) => row.get("id"),
         Err(e) => {
-            eprintln!("Failed to register user : {}", e);
+            eprintln!("Failed to fetch inserted user : {}", e);
             return Status::ImATeapot;
         }
     };
@@ -273,6 +282,51 @@ async fn register(
     return Status::Ok;
 }
 
+#[post("/regiser", rank = 2)]
+fn failed_register() -> Status {
+    return Status::ImATeapot;
+}
+
+
+#[post("/deleteuser", format = "application/json", data = "<user>")]
+async fn delete_user(
+    user: Json<SessionUser>,
+    mut db: Connection<DsuToolsDB>,
+    cookies: &CookieJar<'_>,
+) -> Status {
+    // 1. Test to see if this user exists.
+    let user_id = match get_user_id(&mut db, &user.username).await {
+        Some(id) => id,
+        None => {
+            return Status::ImATeapot;
+        }
+    };
+
+    // 2. Test if the token is authentication.
+    if is_token_authenticated(&mut db, user_id, &user.token).await == false {
+        return Status::ImATeapot;
+    }
+
+    // 2. If the uesr exists, delete the user and the session token.
+    let query_delete = sqlx::query("DELETE FROM SessionTokens WHERE username = ?; DELETE FROM Users WHERE username = ?")
+        .bind(&user.username)
+        .bind(&user.username);
+    let query_result = query_delete.fetch_one(&mut **db).await;
+
+    if let Err(e) = query_result {
+        eprintln!("Failed to delete a user : {}", e);
+        return Status::ImATeapot;
+    }
+
+    cookies.remove(("session", user.token.clone()));
+    return Status::Ok;
+}
+
+#[post("/deleteuser", rank = 2)]
+fn failed_delete_user() -> Status {
+    return Status::ImATeapot;
+}
+
 // 'rocket::main' is another macro that tells Rocket that this is our main function.
 // While compiling, Rocket will modify this function using witchcraft.
 #[rocket::main]
@@ -282,7 +336,7 @@ async fn main() -> Result<(), rocket::Error> {
     // Finally, it runs the server until the server is stopped.
     let _rocket = rocket::build()
         .attach(DsuToolsDB::init()) // Use this database.
-        .mount("/", routes![login, failed_login, register, logout, failed_logout])
+        .mount("/", routes![login, failed_login, register,failed_register, logout, failed_logout, delete_user, failed_delete_user])
         .mount("/", FileServer::from("../dsutools-frontend/dist/"))
         .launch()
         .await?;
