@@ -146,8 +146,7 @@ async fn login(
 // If the login request doesn't have the corrent user information required,...
 #[post("/login", rank = 2)]
 fn failed_login() -> Status {
-    // TODO: pick better error codes.
-    return Status::Unauthorized;
+    return Status::BadRequest;
 }
 
 // #[get("/logout", format = "application/json", data = "<user>")]
@@ -163,7 +162,7 @@ async fn register(
 ) -> Status {
     // 1. Test to see if this user already exists.
     if let Some(_) = get_user_id(&mut db, &user.username).await {
-        return Status::ImATeapot;
+        return Status::Conflict;
     }
 
     // 2. If the uesr doesn't exist, create a new user.
@@ -175,7 +174,7 @@ async fn register(
         Ok(row) => row.get("id"),
         Err(e) => {
             eprintln!("Failed to register user : {}", e);
-            return Status::ImATeapot;
+            return Status::InternalServerError;
         }
     };
 
@@ -196,7 +195,12 @@ async fn register(
                    // 6. Log the user in
 
     cookies.add(("session", token.clone()));
-    return Status::Ok;
+    return Status::Created;
+}
+
+#[post("/register", rank = 2)]
+async fn bad_register() -> Status {
+    return Status::BadRequest;
 }
 
 // 'rocket::main' is another macro that tells Rocket that this is our main function.
@@ -208,11 +212,10 @@ async fn main() -> Result<(), rocket::Error> {
     // Finally, it runs the server until the server is stopped.
     let _rocket = rocket::build()
         .attach(DsuToolsDB::init()) // Use this database.
-        .mount("/", routes![login, failed_login, register])
+        .mount("/", routes![login, failed_login, register, bad_register])
         .mount("/", FileServer::from("../dsutools-frontend/dist/"))
         .launch()
         .await?;
-
     // At this point, the server has stopped.
 
     // In Rust, we have a Result type that is either Ok or an Error.
