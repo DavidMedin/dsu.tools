@@ -79,6 +79,26 @@ async fn register_session_token(
     return Ok(());
 }
 
+async fn delete_session_token(
+    db: &mut Connection<DsuToolsDB>,
+    user_id: i64,
+    user_token: &String,
+) -> Result<(), ()> {
+    // Generate a SQL query
+    let query = sqlx::query("DELETE FROM SessionTokens WHERE user_id = ? AND token = ?")
+        .bind(user_id)
+        .bind(user_token);
+
+    // Ask the database the question
+    let query_result = query.execute(&mut ***db).await;
+
+    if let Err(e) = query_result {
+        eprintln!("Failed to delete token : {}", e);
+        return Err(());
+    }
+    return Ok(());
+}
+
 #[derive(Database)] // A Rust macro that operates on the DsuToolsDB struct.
 #[database("dsutools_db")] // Links the DsuToolsDB struct to the "dsutools_db" database mentioned in the Rocket.toml file.
 struct DsuToolsDB(sqlx::SqlitePool); // A struct with one field, a SqlitePool.
@@ -87,6 +107,12 @@ struct DsuToolsDB(sqlx::SqlitePool); // A struct with one field, a SqlitePool.
 struct User {
     username: String,
     password: String,
+}
+
+#[derive(Deserialize, Debug)]
+struct SessionUser {
+    username: String,
+    token: String,
 }
 
 // v------ This is a Function Macro in Rust. It is some code that the Rocket library
@@ -150,10 +176,58 @@ fn failed_login() -> Status {
     return Status::Unauthorized;
 }
 
-// #[get("/logout", format = "application/json", data = "<user>")]
-// fn logout() -> Status {
-//     return Status::ImATeapot;
-// }
+#[post("/logout", format = "application/json", data = "<user>")]
+async fn logout(
+    user: Json<SessionUser>,
+    mut db: Connection<DsuToolsDB>,
+    cookies: &CookieJar<'_>,
+) -> Status {
+
+    // 1. Test to see if this user exists.
+    // Generate a SQL query
+    let user_query = sqlx::query("SELECT * FROM users WHERE username = ?")
+    .bind(&user.username);
+
+    let user_query_result = user_query.fetch_one(&mut **db).await; // Asyncronous Rust keyword. This function will wait for the database to respond.
+    
+    let user_row = match user_query_result {
+        Ok(row) => row, // the variable 'user_row' will be set to the value of 'row' if the query was successful.
+        Err(_) => {
+            // If the query fails, return a HTTP 401 Unauthorized status code.
+            return Status::Unauthorized;
+        }
+    };
+
+    let user_id = user_row.get("id");
+
+    // 2. Test to see if this session_token exists in the database.
+    let session_query = sqlx::query("SELECT * FROM SessionTokens WHERE user_id = ? AND token = ?")
+        .bind(&user_id)
+        .bind(&user.token);
+
+    let session_query_result = session_query.fetch_one(&mut **db).await; // Asyncronous Rust keyword. This function will wait for the database to respond.
+    
+    if let Err(_) = session_query_result {
+        // If the query fails, return a HTTP 401 Unauthorized status code.
+        return Status::Unauthorized;
+    }
+
+    // 3. Register the token from the database.
+    delete_session_token(&mut db, user_id, &user.token)
+        .await
+        .unwrap();
+
+    // 4. Delete the token from the session cookie.
+    cookies.remove(("session", user.token.clone()));
+
+    return Status::Ok;
+}
+
+#[post("/logout", rank = 2)]
+fn failed_logout() -> Status {
+    // TODO: pick better error codes.
+    return Status::Unauthorized;
+}
 
 #[post("/register", format = "application/json", data = "<user>")]
 async fn register(
@@ -208,7 +282,7 @@ async fn main() -> Result<(), rocket::Error> {
     // Finally, it runs the server until the server is stopped.
     let _rocket = rocket::build()
         .attach(DsuToolsDB::init()) // Use this database.
-        .mount("/", routes![login, failed_login, register])
+        .mount("/", routes![login, failed_login, register, logout, failed_logout])
         .mount("/", FileServer::from("../dsutools-frontend/dist/"))
         .launch()
         .await?;
