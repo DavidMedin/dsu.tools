@@ -91,6 +91,26 @@ async fn register_session_token(
     return Ok(());
 }
 
+async fn delete_session_token(
+    db: &mut Connection<DsuToolsDB>,
+    user_id: i64,
+    user_token: &String,
+) -> Result<(), sqlx::Error> {
+    // Generate a SQL query
+    let query = sqlx::query("DELETE FROM SessionTokens WHERE user_id = ? AND token = ?")
+        .bind(user_id)
+        .bind(user_token);
+
+    // Ask the database the question
+    let query_result = query.execute(&mut ***db).await;
+
+    if let Err(e) = query_result {
+        eprintln!("Failed to delete token : {}", e);
+        return Err(e);
+    }
+    return Ok(());
+}
+
 #[derive(Database)] // A Rust macro that operates on the DsuToolsDB struct.
 #[database("dsutools_db")] // Links the DsuToolsDB struct to the "dsutools_db" database mentioned in the Rocket.toml file.
 struct DsuToolsDB(sqlx::SqlitePool); // A struct with one field, a SqlitePool.
@@ -99,6 +119,12 @@ struct DsuToolsDB(sqlx::SqlitePool); // A struct with one field, a SqlitePool.
 struct User {
     username: String,
     password: String,
+}
+
+#[derive(Deserialize, Debug)]
+struct SessionUser {
+    username: String,
+    token: String,
 }
 
 // v------ This is a Function Macro in Rust. It is some code that the Rocket library
@@ -148,7 +174,8 @@ async fn login(
     // 5. Register the token in the database.
     if let Err(e) = register_session_token(&mut db, user_id, &token).await {
         eprintln!("Failed to register Session Token into DB : {}", e);
-        return Status::InternalServerError; // Database state is likely broken now. Maybe make sqlite sessions?
+        return Status::InternalServerError; // Database state is likely broken now. 
+        // TODO: Maybe make sqlite sessions?
     }
 
     //6. Add the token to the session cookie.
@@ -160,7 +187,51 @@ async fn login(
 
 // If the login request doesn't have the corrent user information required,...
 #[post("/login", rank = 2)]
-fn failed_login() -> Status {
+fn bad_login() -> Status {
+    return Status::BadRequest;
+}
+
+#[post("/logout", format = "application/json", data = "<user>")]
+async fn logout(
+    user: Json<SessionUser>,
+    mut db: Connection<DsuToolsDB>,
+    cookies: &CookieJar<'_>,
+) -> Status {
+
+    // 1. Get User ID from Username.
+    let user_id = match get_user_id(&mut db, &user.username).await {
+        Ok(maybe) => match maybe {
+            Some(id) => id,
+            None => return Status::Unauthorized
+        },
+        Err(e) => {
+            eprintln!("Failed to query DB for User ID from Username : {}", e);
+            return Status::InternalServerError;
+        },
+    };
+
+    // 2. Test is this user is authenticated with this session token
+    match is_token_authenticated(&mut db, user_id, &user.token).await {
+        Ok(false) => return Status::Unauthorized,
+        Ok(true) => {}
+        Err(e) => {
+            eprintln!("Failed to test if User is authenticated with Session Token : {}", e);
+        }
+    }
+
+    // 3. Register the token from the database.
+    delete_session_token(&mut db, user_id, &user.token)
+        .await
+        .unwrap();
+
+    // 4. Delete the token from the session cookie.
+    cookies.remove(("session", user.token.clone()));
+
+    return Status::Ok;
+}
+
+#[post("/logout", rank = 2)]
+fn bad_logout() -> Status {
     return Status::BadRequest;
 }
 
@@ -182,7 +253,7 @@ async fn register(
         _ => {} // The 'else' clause. This is executed when the user is not in the database.
     }
 
-    // 2. If the uesr doesn't exist, create a new user.
+    // 2. If the user doesn't exist, create a new user.
     let query = sqlx::query("INSERT INTO Users (username, password_hash) VALUES (?, ?)")
         .bind(&user.username)
         .bind(&user.password);
@@ -223,6 +294,55 @@ async fn bad_register() -> Status {
     return Status::BadRequest;
 }
 
+
+#[delete("/user", format = "application/json", data = "<user>")]
+async fn delete_user(
+    user: Json<SessionUser>,
+    mut db: Connection<DsuToolsDB>,
+    cookies: &CookieJar<'_>,
+) -> Status {
+    // 1. Test to see if this user exists.
+    let user_id = match get_user_id(&mut db, &user.username).await {
+        Ok(maybe) => match maybe {
+            Some(id) => id,
+            None => return Status::BadRequest
+        },
+        Err(e) => {
+            eprintln!("Failed to test if a user exists : {}" , e);
+            return Status::InternalServerError;
+        }
+    };
+
+    // 2. Test if the token is authentication.
+    match is_token_authenticated(&mut db, user_id, &user.token).await {
+        Ok(false) => return Status::Forbidden,
+        Ok(true) => {}
+        Err(e) => {
+            eprintln!("Failed to test if session token is authenticated : {}", e);
+            return Status::InternalServerError;
+        }
+    }
+
+    // 3. If the user exists, delete the user and the session token.
+    let query_delete = sqlx::query("DELETE FROM SessionTokens WHERE username = ?; DELETE FROM Users WHERE username = ?")
+        .bind(&user.username)
+        .bind(&user.username);
+    let query_result = query_delete.fetch_one(&mut **db).await;
+
+    if let Err(e) = query_result {
+        eprintln!("Failed to delete a user : {}", e);
+        return Status::InternalServerError;
+    }
+
+    cookies.remove(("session", user.token.clone()));
+    return Status::Ok;
+}
+
+#[delete("/user", rank = 2)]
+fn bad_delete_user() -> Status {
+    return Status::BadRequest;
+}
+
 // 'rocket::main' is another macro that tells Rocket that this is our main function.
 // While compiling, Rocket will modify this function using witchcraft.
 #[rocket::main]
@@ -232,7 +352,7 @@ async fn main() -> Result<(), rocket::Error> {
     // Finally, it runs the server until the server is stopped.
     let _rocket = rocket::build()
         .attach(DsuToolsDB::init()) // Use this database.
-        .mount("/", routes![login, failed_login, register, bad_register])
+        .mount("/", routes![login, bad_login, register, bad_register, logout, bad_logout, delete_user, bad_delete_user])
         .mount("/", FileServer::from("../dsutools-frontend/dist/"))
         .launch()
         .await?;

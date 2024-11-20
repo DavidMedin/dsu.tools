@@ -39,3 +39,16 @@ Request:
 Response:
 - `200` (Ok): Nothing,
 - `500` (Internal Server Error): Something went wrong, likely with the database.
+
+
+### DELETE `/user`
+Request:
+```json
+{
+  "username": "the_username",
+  "token": "big_nasty_token"
+}
+```
+Response:
+- `200` (Ok): Nothing,
+- `500` (Internal Server Error): Something went wrong, likely with the database.
