@@ -2,12 +2,19 @@
 // maybe header and footer should be in this file?
 import Footer from "./Footer.vue";
 import Header from "./Header.vue";
+
+const props = defineProps({
+  direction: {
+    type: String,
+    default: 'row', // Default direction
+  },
+});
 </script>
 
 <template>
     <div id="everything">
         <Header />
-        <main>
+        <main :style="{ flexDirection: direction }">
             <slot />
         </main>
 

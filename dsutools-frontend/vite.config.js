@@ -18,6 +18,7 @@ export default defineConfig({
         main: resolve(__dirname, "index.html"),
         irina: resolve(__dirname, "irina.html"),
         login: resolve(__dirname, "login.html"),
+        register: resolve(__dirname, "register.html"),
       },
     },
   },

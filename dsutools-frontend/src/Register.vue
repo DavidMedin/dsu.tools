@@ -1,9 +1,10 @@
 <script setup>
+import Header from "./components/Header.vue";
 import Page from "./components/Page.vue";
 import { onMounted } from "vue";
 
 onMounted(() => {
-    let loginForm = document.getElementById("login-form");
+    let loginForm = document.getElementById("register-form");
 
     loginForm.addEventListener("submit", (e) => {
         e.preventDefault();
@@ -25,7 +26,7 @@ onMounted(() => {
                 password: password.value,
             };
 
-            fetch("/login", {
+            fetch("/register", {
                 method: "POST",
                 body: JSON.stringify(formData),
                 headers: {
@@ -54,18 +55,14 @@ onMounted(() => {
 </script>
 
 <template>
-    <Page direction="column">
-        <form id="login-form" class="round-box">
+    <Page>
+        <form id="register-form" class="round-box">
             <label for="username">Username:</label>
             <input type="text" id="username" name="username" required />
             <label for="password">Password:</label>
             <input type="password" id="password" name="password" required />
-            <button type="submit">Login</button>
+            <button type="submit">Register</button>
         </form>
-        <div>
-            <h2>Don't have an account?</h2>
-            <button onclick="location.href = '/register.html'">Register</button>
-        </div>
     </Page>
 </template>
 
@@ -76,12 +73,12 @@ onMounted(() => {
     border-style: solid;
 }
 
-#login-form label {
+#register-form label {
     margin-bottom: 0.5em;
     font-weight: bold;
 }
 
-#login-form input {
+#register-form input {
     width: 100%;
     padding: 0.5em;
     margin-bottom: 1em;
@@ -91,7 +88,7 @@ onMounted(() => {
     background-color: var(--color-background-mute);
 }
 
-#login-form button {
+#register-form button {
     padding: 0.5em 1em;
     background-color: darken(var(--color-primary), 10%);
     color: white;
@@ -100,7 +97,7 @@ onMounted(() => {
     cursor: pointer;
 }
 
-#login-form button:hover {
+#register-form button:hover {
     background-color: var(--color-primary);
 }
 </style>
