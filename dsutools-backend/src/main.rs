@@ -13,6 +13,9 @@ use rocket_db_pools::{Connection, Database};
 
 // Random Numbers
 use rand::{distributions::Alphanumeric, Rng};
+
+// Logging
+use log::{debug, error, info, trace, warn};
 // =========================================
 
 // Session tokens are 128 characters long with alphanumberic (a-Z, 0-9) characters.
@@ -22,10 +25,21 @@ fn new_session_token() -> String {
         .take(128)
         .map(char::from)
         .collect();
+
+    // I'm doing some 'complex' logging here.
+    // There are a few logging levels including debug,error, info, trace, and warn (may be others).
+    // They are sorted by severity and verbosity. Trace is more verbose than debug; very super verbose.
+    // the macro `trace!` comes from the `log` library.
+    // The first argument here is making a strucured log: print key-value pairs in the log.
+    // `token:? = s` says "make a key named 'token' and its value is from the variable 's'. ':?' says use the debug formatter for 'token'."
+    info!(token:? = s; "Generated new Session Token");
     return s;
 }
 
-async fn get_user_id(db: &mut Connection<DsuToolsDB>, username: &String) -> Result<Option<i64>, sqlx::Error> {
+async fn get_user_id(
+    db: &mut Connection<DsuToolsDB>,
+    username: &String,
+) -> Result<Option<i64>, sqlx::Error> {
     // Generate a SQL query
     let query = sqlx::query("SELECT * FROM Users WHERE username = ?").bind(username);
 
@@ -37,16 +51,16 @@ async fn get_user_id(db: &mut Connection<DsuToolsDB>, username: &String) -> Resu
             let id: i64 = result_row.get("id");
             return Ok(Some(id));
         }
-        Err(e) => 
-            if let sqlx::Error::RowNotFound = e{
+        Err(e) => {
+            if let sqlx::Error::RowNotFound = e {
                 // The user doesn't exist; gracefully return.
                 return Ok(None);
-            }else
-            {
+            } else {
                 // Something else is wrong!
-                eprintln!("Failed to get query DB for User ID with Username : {}", e);
+                error!("Failed to get query DB for User ID with Username : {}", e);
                 return Err(e);
             }
+        }
     }
 }
 
@@ -65,11 +79,16 @@ async fn is_token_authenticated(
 
     match query_result {
         Ok(_) => return Ok(true),
-        Err(e) => if let sqlx::Error::RowNotFound = e {
-            return Ok(false);
-        }else {
-            eprintln!("Failed to get query DB for Session Token with User ID and Token : {}", e);
-            return Err(e);
+        Err(e) => {
+            if let sqlx::Error::RowNotFound = e {
+                return Ok(false);
+            } else {
+                error!(
+                    "Failed to get query DB for Session Token with User ID and Token : {}",
+                    e
+                );
+                return Err(e);
+            }
         }
     }
 }
@@ -105,7 +124,7 @@ async fn delete_session_token(
     let query_result = query.execute(&mut ***db).await;
 
     if let Err(e) = query_result {
-        eprintln!("Failed to delete token : {}", e);
+        error!("Failed to delete token : {}", e);
         return Err(e);
     }
     return Ok(());
@@ -164,8 +183,11 @@ async fn login(
     // 4. Test to see if this session_token exists in the database.
     //    Regenerate the token if it already exists.
     while match is_token_authenticated(&mut db, user_id, &token).await {
-         Ok(found)=>found, 
-         Err(e) => {eprintln!("Failed to test if token is authenticated : {}", e); return Status::InternalServerError;}
+        Ok(found) => found,
+        Err(e) => {
+            error!("Failed to test if token is authenticated : {}", e);
+            return Status::InternalServerError;
+        }
     } {
         // If the token already exists, generate a new one.
         token = new_session_token();
@@ -173,9 +195,9 @@ async fn login(
 
     // 5. Register the token in the database.
     if let Err(e) = register_session_token(&mut db, user_id, &token).await {
-        eprintln!("Failed to register Session Token into DB : {}", e);
-        return Status::InternalServerError; // Database state is likely broken now. 
-        // TODO: Maybe make sqlite sessions?
+        error!("Failed to register Session Token into DB : {}", e);
+        return Status::InternalServerError; // Database state is likely broken now.
+                                            // TODO: Maybe make sqlite sessions?
     }
 
     //6. Add the token to the session cookie.
@@ -197,17 +219,16 @@ async fn logout(
     mut db: Connection<DsuToolsDB>,
     cookies: &CookieJar<'_>,
 ) -> Status {
-
     // 1. Get User ID from Username.
     let user_id = match get_user_id(&mut db, &user.username).await {
         Ok(maybe) => match maybe {
             Some(id) => id,
-            None => return Status::Unauthorized
+            None => return Status::Unauthorized,
         },
         Err(e) => {
-            eprintln!("Failed to query DB for User ID from Username : {}", e);
+            error!("Failed to query DB for User ID from Username : {}", e);
             return Status::InternalServerError;
-        },
+        }
     };
 
     // 2. Test is this user is authenticated with this session token
@@ -215,7 +236,10 @@ async fn logout(
         Ok(false) => return Status::Unauthorized,
         Ok(true) => {}
         Err(e) => {
-            eprintln!("Failed to test if User is authenticated with Session Token : {}", e);
+            error!(
+                "Failed to test if User is authenticated with Session Token : {}",
+                e
+            );
         }
     }
 
@@ -247,7 +271,7 @@ async fn register(
             return Status::Conflict; // The user already exists.
         }
         Err(e) => {
-            eprintln!("Failed to test if user already exists : {}",e);
+            error!("Failed to test if user already exists : {}", e);
             return Status::InternalServerError;
         }
         _ => {} // The 'else' clause. This is executed when the user is not in the database.
@@ -261,7 +285,7 @@ async fn register(
     let user_id = match query_result {
         Ok(row) => row.last_insert_rowid(),
         Err(e) => {
-            eprintln!("Failed to register user : {}", e);
+            error!("Failed to register user : {}", e);
             return Status::InternalServerError;
         }
     };
@@ -272,8 +296,11 @@ async fn register(
     // 4. Test to see if this session_token exists in the database.
     //    Regenerate the token if it already exists.
     while match is_token_authenticated(&mut db, user_id, &token).await {
-         Ok(found)=>found, 
-         Err(e) => {eprintln!("Failed to test if token is authenticated : {}", e); return Status::InternalServerError;}
+        Ok(found) => found,
+        Err(e) => {
+            error!("Failed to test if token is authenticated : {}", e);
+            return Status::InternalServerError;
+        }
     } {
         // If the token already exists, generate a new one.
         token = new_session_token();
@@ -281,7 +308,7 @@ async fn register(
 
     // 5. Register the token in the database.
     if let Err(e) = register_session_token(&mut db, user_id, &token).await {
-        eprintln!("Failed to register Session Token into DB : {}", e);
+        error!("Failed to register Session Token into DB : {}", e);
         return Status::InternalServerError; // Database state is likely broken now. Maybe make sqlite sessions?
     }
 
@@ -294,7 +321,6 @@ async fn bad_register() -> Status {
     return Status::BadRequest;
 }
 
-
 #[delete("/user", format = "application/json", data = "<user>")]
 async fn delete_user(
     user: Json<SessionUser>,
@@ -305,10 +331,10 @@ async fn delete_user(
     let user_id = match get_user_id(&mut db, &user.username).await {
         Ok(maybe) => match maybe {
             Some(id) => id,
-            None => return Status::BadRequest
+            None => return Status::BadRequest,
         },
         Err(e) => {
-            eprintln!("Failed to test if a user exists : {}" , e);
+            error!("Failed to test if a user exists : {}", e);
             return Status::InternalServerError;
         }
     };
@@ -318,19 +344,21 @@ async fn delete_user(
         Ok(false) => return Status::Forbidden,
         Ok(true) => {}
         Err(e) => {
-            eprintln!("Failed to test if session token is authenticated : {}", e);
+            error!("Failed to test if session token is authenticated : {}", e);
             return Status::InternalServerError;
         }
     }
 
     // 3. If the user exists, delete the user and the session token.
-    let query_delete = sqlx::query("DELETE FROM SessionTokens WHERE username = ?; DELETE FROM Users WHERE username = ?")
-        .bind(&user.username)
-        .bind(&user.username);
+    let query_delete = sqlx::query(
+        "DELETE FROM SessionTokens WHERE username = ?; DELETE FROM Users WHERE username = ?",
+    )
+    .bind(&user.username)
+    .bind(&user.username);
     let query_result = query_delete.fetch_one(&mut **db).await;
 
     if let Err(e) = query_result {
-        eprintln!("Failed to delete a user : {}", e);
+        error!("Failed to delete a user : {}", e);
         return Status::InternalServerError;
     }
 
@@ -352,7 +380,19 @@ async fn main() -> Result<(), rocket::Error> {
     // Finally, it runs the server until the server is stopped.
     let _rocket = rocket::build()
         .attach(DsuToolsDB::init()) // Use this database.
-        .mount("/", routes![login, bad_login, register, bad_register, logout, bad_logout, delete_user, bad_delete_user])
+        .mount(
+            "/",
+            routes![
+                login,
+                bad_login,
+                register,
+                bad_register,
+                logout,
+                bad_logout,
+                delete_user,
+                bad_delete_user
+            ],
+        )
         .mount("/", FileServer::from("../dsutools-frontend/dist/"))
         .launch()
         .await?;

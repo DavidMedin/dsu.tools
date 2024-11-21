@@ -1,4 +1,5 @@
 [default]
+log_level = "debug"
 
 [dependencies.rocket_db_pools]
 version = "0.2.0"
