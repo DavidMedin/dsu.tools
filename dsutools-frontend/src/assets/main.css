@@ -1,5 +1,5 @@
 /* Import color styles. */
-@import "./base.css";
+@import "./colors.css";
 
 /* Page layout */
 
@@ -33,6 +33,22 @@ a,
     transition: 0.4s;
     padding: 3px;
     border-radius: 0.5em;
+}
+
+button {
+    background-color: var(--color-primary);
+    color: white;
+    border: none;
+    padding-left: 1em;
+    padding-right: 1rem;
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+    border-radius: 0.5em;
+    cursor: pointer;
+    transition: 0.4s;
+    margin-left: 1rem;
+    margin-right: 1rem;
+    text-align: center;
 }
 
 /* When hovering is supported by the browser. */

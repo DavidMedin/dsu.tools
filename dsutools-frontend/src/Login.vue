@@ -1,6 +1,7 @@
 <script setup>
 import Page from "./components/Page.vue";
-import { onMounted } from "vue";
+import { onMounted, defineProps, defineEmits } from "vue";
+import {toggleLogin} from "./components/Header.vue";
 
 onMounted(() => {
     let loginForm = document.getElementById("login-form");
@@ -38,8 +39,8 @@ onMounted(() => {
                     }
                     else{
                         window.location.replace("/");
-                        document.getElementById("login-button").style.display = "none";
-                        document.getElementById("logout-button").style.display = "block";
+                        localStorage.setItem("loggedIn", 'true');
+                        toggleLogin();
                     }
                 })
                 .catch((error) => {
@@ -62,7 +63,7 @@ onMounted(() => {
             <input type="password" id="password" name="password" required />
             <button type="submit">Login</button>
         </form>
-        <div>
+        <div style="display: flex; flex-direction: column; align-items: center;">
             <h2>Don't have an account?</h2>
             <button onclick="location.href = '/register.html'">Register</button>
         </div>

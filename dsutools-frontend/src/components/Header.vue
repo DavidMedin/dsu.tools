@@ -1,17 +1,21 @@
-<script>
-import Login from '@/Login.vue';
+<script setup>
 
-export default {
+export function toggleLogin() {
   methods: {
-    toggleLogin() {
+    function toggleLogin() {
       // Logic to toggle the login form visibility
-      const loginForm = document.getElementById('login-form');
-      if (loginForm) {
-        loginForm.style.display = loginForm.style.display === 'none' ? 'block' : 'none';
+      if (localStorage.getItem('loggedIn') === true) {
+        document.getElementById("login-button").style.display = "none";
+        document.getElementById("logout-button").style.display = "block";
+      }
+      else if (localStorage.getItem('loggedIn') === false){
+        document.getElementById("login-button").style.display = "block";
+        document.getElementById("logout-button").style.display = "none";
       }
     }
   }
 };
+this.toggleLogin();
 </script>
 
 <template>
@@ -31,11 +35,6 @@ export default {
     padding: 1rem;
     align-items: center;
     user-select: none;
-}
-
-#login-button,
-#logout-button {
-    padding-right: 1rem;
 }
 
 #logout-button {
