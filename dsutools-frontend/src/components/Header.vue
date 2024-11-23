@@ -1,31 +1,38 @@
 <script setup>
+import { onMounted } from "vue";
 
-export function toggleLogin() {
-  methods: {
-    function toggleLogin() {
-      // Logic to toggle the login form visibility
-      if (localStorage.getItem('loggedIn') === true) {
-        document.getElementById("login-button").style.display = "none";
-        document.getElementById("logout-button").style.display = "block";
+// Call the function on page load to set initial state
+onMounted(() => {
+    console.log("Login button:", document.getElementById("login-button"));
+
+    const loggedIn = localStorage.getItem('loggedIn') === 'true'; // Check stored value as string
+  
+    // Ensure the elements exist before trying to access them
+    const loginButton = document.getElementById("login-button");
+    const logoutButton = document.getElementById("logout-button");
+  
+    if (loginButton && logoutButton) {
+      if (loggedIn) {
+        loginButton.style.display = "none";
+        logoutButton.style.display = "block";
+      } else {
+        loginButton.style.display = "block";
+        logoutButton.style.display = "none";
       }
-      else if (localStorage.getItem('loggedIn') === false){
-        document.getElementById("login-button").style.display = "block";
-        document.getElementById("logout-button").style.display = "none";
-      }
-    }
   }
-};
-this.toggleLogin();
+},
+);
+
 </script>
 
 <template>
     <header>
         <div class="name">
-            <h1 class="dsu-blue">DSU.</h1>
-            <h1 class="dsu-blue">TOOLS</h1>
+            <h1 class="dsu-blue" onclick="location.href = '/'">DSU.</h1>
+            <h1 class="dsu-blue" onclick="location.href = '/'">TOOLS</h1>
         </div>
         <button id="login-button" onclick="location.href = '/login.html'">Login</button>
-        <button id="logout-button" onclick="location.href = '/logout.html'">Logout</button>
+        <button id="logout-button" onclick="logout()" style="display: none;">Logout</button>
     </header>
 </template>
 
