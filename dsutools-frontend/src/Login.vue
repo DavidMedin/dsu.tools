@@ -35,7 +35,15 @@ onMounted(() => {
             })
                 .then((response) => {
                     if (!response.ok) {
-                        throw new Error("Not ok");
+                        const message = document.createElement("p");
+                        message.textContent = "Invalid username or password";
+                        message.style.color = "red";
+                        document.getElementById("login-form").appendChild(message);
+                        
+                        setTimeout(() => {
+                            message.remove();
+                        }, 5000);
+                        // throw new Error("Not ok");
                     }
                     else{
                         localStorage.setItem("loggedIn", 'true');
