@@ -1,7 +1,7 @@
 <script setup>
+import Header from "./components/Header.vue";
 import Page from "./components/Page.vue";
-import { onMounted, defineProps, defineEmits } from "vue";
-import {toggleLogin} from "./components/Header.vue";
+import { onMounted } from "vue";
 
 onMounted(() => {
     let loginForm = document.getElementById("login-form");
@@ -38,9 +38,8 @@ onMounted(() => {
                         throw new Error("Not ok");
                     }
                     else{
-                        window.location.replace("/");
                         localStorage.setItem("loggedIn", 'true');
-                        toggleLogin();
+                        window.location.replace("/");
                     }
                 })
                 .catch((error) => {

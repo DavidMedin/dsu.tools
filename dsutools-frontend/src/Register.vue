@@ -38,9 +38,8 @@ onMounted(() => {
                         throw new Error("Not ok");
                     }
                     else{
+                        localStorage.setItem("loggedIn", 'true');
                         window.location.replace("/");
-                        document.getElementById("login-button").style.display = "none";
-                        document.getElementById("logout-button").style.display = "block";
                     }
                 })
                 .catch((error) => {

@@ -1,5 +1,3 @@
-// This file will be imported by index.html.
-
 import './assets/main.css'
 
 import { createApp } from 'vue'
