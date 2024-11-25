@@ -1,24 +1,13 @@
 <script setup>
 import Flashcard from "./components/Flashcard.vue";
+import Page from "./components/Page.vue";
 </script>
 
 <template>
-    <main>
-        <Flashcard></Flashcard>
-    </main>
+    <Page direction="column">
+        <button>Create new flashcard set</button>
+    </Page>
 </template>
 
 <style scoped>
-    * {
-        font-family: 'Courier New', Courier, monospace;
-        color: black;
-    }
-
-    main {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        flex-wrap: wrap;
-        position: absolute;
-    }
 </style>
