@@ -15,10 +15,11 @@ use rocket_db_pools::{Connection, Database};
 use rand::{distributions::Alphanumeric, Rng};
 
 // Logging
-use log::{debug, error, info, trace, warn};
+use tracing::{error, instrument, trace, warn};
 // =========================================
 
 // Session tokens are 128 characters long with alphanumberic (a-Z, 0-9) characters.
+#[instrument] // Tells the 'tracing' library to wrap this function in some function calls that allow logging.
 fn new_session_token() -> String {
     let s: String = rand::thread_rng()
         .sample_iter(&Alphanumeric)
@@ -32,10 +33,11 @@ fn new_session_token() -> String {
     // the macro `trace!` comes from the `log` library.
     // The first argument here is making a strucured log: print key-value pairs in the log.
     // `token:? = s` says "make a key named 'token' and its value is from the variable 's'. ':?' says use the debug formatter for 'token'."
-    info!(token:? = s; "Generated new Session Token");
+    trace!(token = s, "Generated new Session Token");
     return s;
 }
 
+#[instrument(skip(db))]
 async fn get_user_id(
     db: &mut Connection<DsuToolsDB>,
     username: &String,
@@ -64,6 +66,7 @@ async fn get_user_id(
     }
 }
 
+#[instrument(skip(db))]
 async fn is_token_authenticated(
     db: &mut Connection<DsuToolsDB>,
     user_id: i64,
@@ -93,6 +96,7 @@ async fn is_token_authenticated(
     }
 }
 
+#[instrument(skip(db))]
 async fn register_session_token(
     db: &mut Connection<DsuToolsDB>,
     user_id: i64,
@@ -110,6 +114,7 @@ async fn register_session_token(
     return Ok(());
 }
 
+#[instrument(skip(db))]
 async fn delete_session_token(
     db: &mut Connection<DsuToolsDB>,
     user_id: i64,
@@ -148,6 +153,7 @@ struct SessionUser {
 
 // v------ This is a Function Macro in Rust. It is some code that the Rocket library
 //         Defines to make it easier to make a route.
+#[instrument(skip(db, cookies))]
 #[post("/login", format = "application/json", data = "<user>")]
 async fn login(
     user: Json<User>,
@@ -208,11 +214,13 @@ async fn login(
 }
 
 // If the login request doesn't have the corrent user information required,...
+#[instrument]
 #[post("/login", rank = 2)]
 fn bad_login() -> Status {
     return Status::BadRequest;
 }
 
+#[instrument(skip(db, cookies))]
 #[post("/logout", format = "application/json", data = "<user>")]
 async fn logout(
     user: Json<SessionUser>,
@@ -254,11 +262,13 @@ async fn logout(
     return Status::Ok;
 }
 
+#[instrument]
 #[post("/logout", rank = 2)]
 fn bad_logout() -> Status {
     return Status::BadRequest;
 }
 
+#[instrument(skip(db, cookies))]
 #[post("/register", format = "application/json", data = "<user>")]
 async fn register(
     user: Json<User>,
@@ -316,11 +326,13 @@ async fn register(
     return Status::Created;
 }
 
+#[instrument]
 #[post("/register", rank = 2)]
 async fn bad_register() -> Status {
     return Status::BadRequest;
 }
 
+#[instrument(skip(db, cookies))]
 #[delete("/user", format = "application/json", data = "<user>")]
 async fn delete_user(
     user: Json<SessionUser>,
@@ -366,6 +378,7 @@ async fn delete_user(
     return Status::Ok;
 }
 
+#[instrument]
 #[delete("/user", rank = 2)]
 fn bad_delete_user() -> Status {
     return Status::BadRequest;
@@ -373,8 +386,19 @@ fn bad_delete_user() -> Status {
 
 // 'rocket::main' is another macro that tells Rocket that this is our main function.
 // While compiling, Rocket will modify this function using witchcraft.
+#[instrument]
 #[rocket::main]
 async fn main() -> Result<(), rocket::Error> {
+    // Describes to the 'tracing' library how and what to log.
+    let log_subscriber = tracing_subscriber::fmt()
+        .without_time()
+        .with_target(false)
+        .with_file(false)
+        .with_line_number(true)
+        .with_env_filter("dsutools_backend=trace")
+        .finish();
+    tracing::subscriber::set_global_default(log_subscriber).unwrap();
+
     // This code starts up Rocket. It tells Rocket about our 'index()' function
     // we've defined above, and where to mount it.
     // Finally, it runs the server until the server is stopped.
