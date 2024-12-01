@@ -1,10 +1,12 @@
 <script setup>
 import { IconClipboard } from "@tabler/icons-vue";
-import ToolTip from "./ToolTip.vue"
+import ToolTip from "./ToolTip.vue";
 const props = defineProps({
+    label: {
+        type: String,
+    },
     text: {
         required: true,
-        type: String,
     },
 });
 
@@ -26,10 +28,12 @@ function copy() {
 
 <template>
     <div class="outer tooltip-haver" @click="copy">
-        <ToolTip/>
+        <ToolTip />
         <IconClipboard class="icon" />
         <div class="content">
-            <p unselectable="on" onselectstart="return false;">{{ text }}</p>
+            <p unselectable="on" onselectstart="return false;">
+                {{ (props.label || "") + text }}
+            </p>
         </div>
     </div>
 </template>
@@ -44,7 +48,7 @@ function copy() {
 }
 .outer:hover {
     background-color: var(--color-surface-lvl-2);
-    transform:scale(1.05)
+    transform: scale(1.05);
 }
 
 .icon {

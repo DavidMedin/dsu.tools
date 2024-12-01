@@ -188,6 +188,15 @@ watch(color.value, (new_val, old_val) => {
     render();
     moveHandle(colorToHandlePosX(new_val));
 });
+
+// Watch for the case where the color doesn't change when the color space changes ( like with the color #000000).
+watch(
+    () => props.color_space,
+    (new_val, old_val) => {
+        render();
+        moveHandle(colorToHandlePosX(new_val));
+    },
+);
 </script>
 
 <template>

@@ -1,12 +1,29 @@
 <script setup>
-import { inject } from "vue";
+import { inject, computed } from "vue";
 import CopyableText from "../CopyableText.vue";
 
-defineProps({
+function truncToTwoDecimalPlaces(n) {
+    return Math.floor(n * 100) / 100;
+}
+
+const props = defineProps({
     color: { type: Array, required: true },
     color_space_index: { type: Number, required: true },
 });
 const color_spaces = inject("ColorSpaces");
+const toRGBHex = computed(
+    () => color_spaces[props.color_space_index].conversions.toRGBHex,
+);
+const rgb_hex = computed(() => toRGBHex.value(props.color));
+
+const hct = computed(() =>
+    color_spaces[0].conversions
+        .fromRGBHex(rgb_hex.value)
+        .map(truncToTwoDecimalPlaces),
+);
+const rgb = computed(() =>
+    color_spaces[1].conversions.fromRGBHex(rgb_hex.value),
+);
 </script>
 
 <template>
@@ -20,31 +37,36 @@ const color_spaces = inject("ColorSpaces");
         <tbody>
             <tr>
                 <td>
+                    <CopyableText :text="'#' + rgb_hex" />
+                </td>
+                <td><CopyableText :text="rgb[0]" /></td>
+                <td><CopyableText :text="rgb[1]" /></td>
+                <td><CopyableText :text="rgb[2]" /></td>
+            </tr>
+            <tr>
+                <td>
                     <CopyableText
                         :text="
-                            '#' +
-                            color_spaces[
-                                color_space_index
-                            ].conversions.toRGBHex(color)
+                            'rgb(' + rgb[0] + ',' + rgb[1] + ',' + rgb[2] + ')'
                         "
                     />
                 </td>
-                <td><CopyableText text="Red: 1" /></td>
-                <td><CopyableText text="Green: 2" /></td>
-                <td><CopyableText text="Blue: 3" /></td>
-            </tr>
-            <tr>
-                <td><CopyableText text="RGB" /></td>
-                <td><CopyableText text="Red: 1" /></td>
-                <td><CopyableText text="Green: 2" /></td>
-                <td><CopyableText text="Blue: 3" /></td>
+                <td><CopyableText label="Red: " :text="rgb[0]" /></td>
+                <td><CopyableText label="Green: " :text="rgb[1]" /></td>
+                <td><CopyableText label="Blue: " :text="rgb[2]" /></td>
             </tr>
 
             <tr>
-                <td><CopyableText text="HCT" /></td>
-                <td><CopyableText text="Hue: 2" /></td>
-                <td><CopyableText text="Chroma: 3" /></td>
-                <td><CopyableText text="Tone: 4" /></td>
+                <td>
+                    <CopyableText
+                        :text="
+                            'hct(' + hct[0] + ',' + hct[1] + ',' + hct[2] + ')'
+                        "
+                    />
+                </td>
+                <td><CopyableText label="Hue: " :text="hct[0]" /></td>
+                <td><CopyableText label="Chroma: " :text="hct[1]" /></td>
+                <td><CopyableText label="Tone: " :text="hct[2]" /></td>
             </tr>
         </tbody>
     </table>
