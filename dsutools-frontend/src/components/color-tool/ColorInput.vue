@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, inject } from "vue";
+import { computed, inject } from "vue";
 import ColorSlider from "./ColorSlider.vue";
 
 // Controlled by the sliders.
@@ -10,24 +10,15 @@ const props = defineProps({
         required: true,
     },
 });
-const color = defineModel({ required: true });
+const color = defineModel("color");
 
 const color_spaces = inject("ColorSpaces");
+let space = computed(() => color_spaces[props.color_space_index]);
 
-let toRGBHex = computed(() => {
-    console.log("Computed toRGBHex!");
-    return color_spaces[props.color_space_index].conversions.toRGBHex;
-});
-let fromRGBHex = computed(
-    () => color_spaces[props.color_space_index].conversions.fromRGBHex,
-);
 // Computed from 'color' whenever it changes.
 // sRGB can be though of as simply RGB. I don't know much about color theory :(
 const srgb_color_hex = computed(() => {
-    return color_spaces[props.color_space_index].conversions.toRGBHex(
-        color.value,
-    );
-    // return toRGBHex(color.value);
+    return space.value.conversions.toRGBHex(color.value);
 });
 </script>
 
@@ -49,11 +40,10 @@ const srgb_color_hex = computed(() => {
                 v-model="color[0]"
             />
             <ColorSlider
-                :color_space="toRGBHex"
-                :in_color="color"
-                :max_value="360"
+                :color_space="space"
+                v-model:color="color"
+                :max_value="space.components[0].range[1]"
                 :variable_index="0"
-                v-model="color[0]"
             />
         </div>
 
@@ -65,11 +55,10 @@ const srgb_color_hex = computed(() => {
                 v-model="color[1]"
             />
             <ColorSlider
-                :color_space="toRGBHex"
-                :in_color="color"
-                :max_value="120"
+                :color_space="space"
+                v-model:color="color"
+                :max_value="space.components[1].range[1]"
                 :variable_index="1"
-                v-model="color[1]"
             />
         </div>
 
@@ -81,11 +70,10 @@ const srgb_color_hex = computed(() => {
                 v-model="color[2]"
             />
             <ColorSlider
-                :color_space="toRGBHex"
-                :in_color="color"
-                :max_value="100"
+                :color_space="space"
+                v-model:color="color"
+                :max_value="space.components[2].range[1]"
                 :variable_index="2"
-                v-model="color[2]"
             />
         </div>
     </div>

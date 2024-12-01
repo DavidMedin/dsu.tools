@@ -18,11 +18,16 @@ import ColorRow from "./components/color-tool/ColorRow.vue";
 const color_spaces = [
     {
         name: "HCT",
-        components: ["Hue", "Chroma", "Tone"],
+        components: [
+            { name: "Hue", range: [0, 360] },
+            { name: "Chroma", range: [0, 120] },
+            { name: "Tone", range: [0, 100] },
+        ],
         description: "A neat little color space. Yuh",
         conversions: {
             fromRGBHex: (hex) => {
-                let hct = Hct.fromInt(hex);
+                let fmted_hex = Number("0x" + hex);
+                let hct = Hct.fromInt(fmted_hex);
                 return [hct.hue, hct.chroma, hct.tone];
             },
             toRGBHex: (hct) =>
@@ -31,7 +36,11 @@ const color_spaces = [
     },
     {
         name: "RGB",
-        components: ["Red", "Green", "Blue"],
+        components: [
+            { name: "Red", range: [0, 255] },
+            { name: "Green", range: [0, 255] },
+            { name: "Blue", range: [0, 255] },
+        ],
         description: "The color space of the web.",
         conversions: {
             fromRGBHex: (hex) => {
@@ -40,8 +49,11 @@ const color_spaces = [
                 let b = parseInt(hex.slice(4, 6), 16);
                 return [r, g, b];
             },
-            toRGBHex: (rgb) =>
-                rgb.map((c) => c.toString(16).padStart(2, "0")).join(""),
+            toRGBHex: (rgb) => {
+                return rgb
+                    .map((c) => Math.round(c).toString(16).padStart(2, "0"))
+                    .join("");
+            },
         },
     },
     {
