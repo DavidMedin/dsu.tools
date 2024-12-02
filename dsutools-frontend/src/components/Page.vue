@@ -8,13 +8,21 @@ const props = defineProps({
     type: String,
     default: 'row', // Default direction
   },
+  justifyContent: {
+    type: String,
+    default: 'center',
+  },
+  alignTimes: {
+    type: String,
+    default: 'center',
+  }
 });
 </script>
 
 <template>
     <div id="everything">
         <Header />
-        <main :style="{ flexDirection: direction }">
+        <main :style="{ flexDirection: direction, justifyContent: justifyContent, alignTimes: alignTimes}">
             <slot />
         </main>
 
@@ -33,8 +41,6 @@ const props = defineProps({
 
 main {
     display: flex;
-    justify-content: center;
-    align-items: center;
     flex-grow: 1;
 }
 </style>
