@@ -174,42 +174,40 @@ function Equals()
 <template>
   <!-- NUMBER BUTTONS -->
    
-  <div>
-    <p> {{ curNumber }} </p>
-    <div class="parent-flex">
-    <button class="child-flex" @click="Append('1')"> 1 </button>
-    <button class="child-flex" @click="Append('2')"> 2 </button>
-    <button class="child-flex" @click="Append('3')"> 3 </button>
-    <button class="child-flex" @click="Append('4')"> 4 </button>
-    <button class="child-flex" @click="Append('5')"> 5 </button>
-    <button class="child-flex" @click="Append('6')"> 6 </button>
-    <button class="child-flex" @click="Append('7')"> 7 </button>
-    <button class="child-flex" @click="Append('8')"> 8 </button>
-    <button class="child-flex" @click="Append('9')"> 9 </button>
-    <button class="child-flex" @click="Append('0')"> 0 </button>
-    <button class="child-flex" @click="Append('.')"> . </button>
-  </div>
+    <p class="number-box"> {{ curNumber }} </p>
+    <div class="number-pad">
+      <button class="number-button" @click="Append('1')"> 1 </button>
+      <button class="number-button" @click="Append('2')"> 2 </button>
+      <button class="number-button" @click="Append('3')"> 3 </button>
+      <button class="number-button" @click="Append('4')"> 4 </button>
+      <button class="number-button" @click="Append('5')"> 5 </button>
+      <button class="number-button" @click="Append('6')"> 6 </button>
+      <button class="number-button" @click="Append('7')"> 7 </button>
+      <button class="number-button" @click="Append('8')"> 8 </button>
+      <button class="number-button" @click="Append('9')"> 9 </button>
+      <button class="number-button" @click="Operation(Operator.NEG)"> -/+ </button>
+      <button class="number-button" @click="Append('0')"> 0 </button>
+      <button class="number-button" @click="Append('.')"> . </button>
+    </div>
   <!-- OTHER BUTTONS -->
-  <div class="parent-flex">
-    <button class="child-flex" @click="Clear()"> CLR </button>
-    <button class="child-flex" @click="ClearMem()"> CLM </button>
-    <button class="child-flex" @click="Delete()"> DEL </button>
-    <button class="child-flex" @click="Operation(Operator.NEG)"> -/+ </button>
-    <button class="child-flex" @click="Operation(Operator.ADD)"> + </button>
-    <button class="child-flex" @click="Operation(Operator.SUB)"> - </button>
-    <button class="child-flex" @click="Operation(Operator.MUL)"> * </button>
-    <button class="child-flex" @click="Operation(Operator.DIV)"> / </button>
-    <button class="child-flex" @click="Operation(Operator.EXP)"> ^ </button>
-    <button class="child-flex" @click="Append(Math.PI)"> π </button>
-    <button class="child-flex" @click="Append(Math.E)"> e </button>
-    <button class="child-flex" @click="Operation(Operator.LOG)"> log10 </button>
-    <button class="child-flex" @click="Operation(Operator.LN)"> ln </button>
-    <button class="child-flex" @click="Operation(Operator.LGB)"> x log base y </button>
-    <button class="child-flex" @click="Operation(Operator.REC)"> 1/x </button>
-    <button class="child-flex" @click="Operation(Operator.ABS)"> |x| </button>
-    <button class="child-flex" @click="Equals()"> = </button>
-  </div>
-  </div>
+    <div class="parent-flex">
+      <button class="child-flex" @click="Delete()"> DEL </button>
+      <button class="child-flex" @click="Clear()"> CLR </button>
+      <button class="child-flex" @click="ClearMem()"> CLM </button>
+      <button class="child-flex" @click="Operation(Operator.ADD)"> + </button>
+      <button class="child-flex" @click="Operation(Operator.SUB)"> - </button>
+      <button class="child-flex" @click="Operation(Operator.MUL)"> * </button>
+      <button class="child-flex" @click="Operation(Operator.DIV)"> / </button>
+      <button class="child-flex" @click="Operation(Operator.EXP)"> ^ </button>
+      <button class="child-flex" @click="Append(Math.PI)"> π </button>
+      <button class="child-flex" @click="Append(Math.E)"> e </button>
+      <button class="child-flex" @click="Operation(Operator.LOG)"> log10 </button>
+      <button class="child-flex" @click="Operation(Operator.LN)"> ln </button>
+      <button class="child-flex" @click="Operation(Operator.LGB)"> x log base y </button>
+      <button class="child-flex" @click="Operation(Operator.REC)"> 1/x </button>
+      <button class="child-flex" @click="Operation(Operator.ABS)"> |x| </button>
+      <button class="child-flex" @click="Equals()"> = </button>
+    </div>
   
 </template>
 
@@ -222,15 +220,36 @@ function Equals()
     text-decoration-color: black;
   }
 
+  .number-box {
+    flex-grow: 2;
+    text-align: right;
+  }
+
+  .number-pad {
+    max-width: 80%;
+    max-height: 100%;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    float: left;
+  }
+
+  .number-button {
+    width: 33%;
+    font-size: large;
+    text-align: center;
+  }
+
   .parent-flex {
     display: flex;
-    max-width: 75px;
     flex-direction: row;
     flex-wrap: wrap;
   }
 
   .child-flex {
-    flex-grow: 2;
+    flex-grow: 5;
+    max-width: 100%;
+    text-align: center;
   }
 
 </style>
