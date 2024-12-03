@@ -13,6 +13,8 @@ const Operator = Object.freeze({ //used to store which operator is currently hap
   DIV: '/',
   EXP: '^',
   LOG: 'l10',
+  LN: 'ln',
+  LGB: 'xlogy',
   ABS: '|',
   NEG: '+/-'
 })
@@ -71,6 +73,10 @@ function Operation(input)
   if(input === Operator.LOG)
   {
     curNumber.value = Math.log10(curNumber.value)
+  }
+  else if(input === Operator.LN)
+  {
+    curNumber.value = Math.log(curNumber.value)
   }
   else if (input === Operator.ABS && curNumber.value < 0)
   {
@@ -134,6 +140,10 @@ function Equals()
   {
     calculation = numA ** numB
   }
+  else if(curOp === Operator.LGB)
+  {
+    calculation = Math.log(numA) / Math.log(numB)
+  }
 
   if(doCacheNum)
     cacheNum.value = numB
@@ -175,7 +185,11 @@ function Equals()
     <button class="child-flex" @click="Operation(Operator.MUL)"> * </button>
     <button class="child-flex" @click="Operation(Operator.DIV)"> / </button>
     <button class="child-flex" @click="Operation(Operator.EXP)"> ^ </button>
+    <button class="child-flex" @click="Append(Math.PI)"> π </button>
+    <button class="child-flex" @click="Append(Math.E)"> e </button>
     <button class="child-flex" @click="Operation(Operator.LOG)"> log10 </button>
+    <button class="child-flex" @click="Operation(Operator.LN)"> ln </button>
+    <button class="child-flex" @click="Operation(Operator.LGB)"> x log base y </button>
     <button class="child-flex" @click="Operation(Operator.ABS)"> |x| </button>
     <button class="child-flex" @click="Equals()"> = </button>
   </div>
