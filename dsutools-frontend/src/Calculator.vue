@@ -1,7 +1,8 @@
 <script setup>
 import { ref, reactive } from 'vue'
+//import { useMath } from '@vueuse/math'
 
-const curNumber = ref('') //what is currently being typed
+const curNumber = ref('0') //what is currently being typed
 const cacheNum = ref('') //used if an operator has been selected to store prev curNumber
 const Operator = Object.freeze({ //used to store which operator is currently happening (enum)
   NONE: 'n/a',
@@ -33,17 +34,24 @@ function Append(input)
   
   //adds input at the end of the string
   console.log(input)
-  curNumber.value += input
+  if(curNumber.value === '0')
+  {
+    curNumber.value = input
+  }
+  else
+  {
+    curNumber.value += input
+  }
 }
 
 function Clear()
 {
-  curNumber.value = ''
+  curNumber.value = '0'
 }
 
 function ClearMem()
 {
-  curNumber.value = ''
+  curNumber.value = '0'
   curOp = Operator.NONE
 }
 
@@ -54,12 +62,28 @@ function Delete()
 
 function Operation(input)
 {
-  if(curOp !== Operator.NONE)
+  //some operations are done when the button is pressed,
+  //so they need to be checked before doing the equals
+
+  //if the current operator does not equal none, then that means 
+  //that we are already in a string of calculations. Thus,
+  //calculate. 
+  cacheOp = curOp
+  curOp = input
+  console.log('cacheOP: ', cacheOp)
+  //5 is pressed. 5 is displayed. curOp === n/a, cacheOp === n/a 
+  //plus is pressed, 5 is cached. curOp === +, cacheOp === n/a
+  //6 is pressed. 6 is displayed. curOp === +, cacheOp === n/a
+  //plus is pressed, 11 is calulated, since a plus was used before. 11 is displayed.
+    //curOp === =, cacheOp === +
+  //7 is pressed. Display 7.
+  //plus is pressed, 20 is calculated, since a plus was used before. Display 20
+  //minus is pressed. Nothing is calculated. 20 is still displayed.
+  if(cacheOp !== Operator.NONE)
   {
     Equals()
   }
   cacheNum.value = curNumber.value
-  curOp = input
   clearText = true;
 }
 
@@ -106,15 +130,12 @@ function Equals()
   {
     calculation = numA ** numB
   }
-  else if(curOp === Operator.LOG)
-  {
-    calculation = Math.log10(numA)
-  }
 
   if(doCacheNum)
     cacheNum.value = numB
   cacheOp = curOp
   curOp = Operator.DONE
+  console.log('curOP: ', curOp)
   curNumber.value = calculation
   clearText = true;
 }

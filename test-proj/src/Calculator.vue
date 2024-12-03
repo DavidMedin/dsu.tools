@@ -1,5 +1,6 @@
 <script setup>
 import { ref, reactive } from 'vue'
+import { useMath } from '@usevue/math'
 
 const curNumber = ref('') //what is currently being typed
 const cacheNum = ref('') //used if an operator has been selected to store prev curNumber
@@ -9,7 +10,10 @@ const Operator = Object.freeze({ //used to store which operator is currently hap
   ADD: '+',
   SUB: '-',
   MUL: '*',
-  DIV: '/'
+  DIV: '/',
+  EXP: '^',
+  SQRT: 'sqrt',
+  LOG: 'log'
 })
 var curOp = Operator.NONE
 var cacheOp = Operator.NONE
@@ -55,6 +59,10 @@ function Operation(input)
   {
     Equals()
   }
+  if(input === Operator.LOG)
+  {
+    curNumber.value = useMath('log', parseInt(curNumber.value))
+  }
   cacheNum.value = curNumber.value
   curOp = input
   clearText = true;
@@ -99,6 +107,18 @@ function Equals()
   {
     calculation = numA / numB
   }
+  else if(curOp === Operator.EXP)
+  {
+    calculation = useMath('pow', numA, numB)
+  }
+  else if(curOp === Operator.SQRT)
+  {
+    calculation = useMath('sqrt', numB)
+  }
+  else if(curOp === Operator.LOG)
+  {
+    calculation = useMath('log', numB)
+  }
 
   if(doCacheNum)
     cacheNum.value = numB
@@ -130,13 +150,16 @@ function Equals()
   </div>
   <!-- OTHER BUTTONS -->
   <div class="parent-flex">
-    <button class="child-flex" @click="Clear()"> CLR </button>
+<!--    <button class="child-flex" @click="Clear()"> CLR </button>
     <button class="child-flex" @click="ClearMem()"> CLM </button>
     <button class="child-flex" @click="Delete()"> DEL </button>
     <button class="child-flex" @click="Operation(Operator.ADD)"> + </button>
     <button class="child-flex" @click="Operation(Operator.SUB)"> - </button>
     <button class="child-flex" @click="Operation(Operator.MUL)"> * </button>
-    <button class="child-flex" @click="Operation(Operator.DIV)"> / </button>
+    <button class="child-flex" @click="Operation(Operator.DIV)"> √ </button>
+    <button class="child-flex" @click="Operation(Operator.EXP)"> a^b </button>
+    <button class="child-flex" @click="Operation(Operator.SQRT)"> √a </button>
+    <button class="child-flex" @click="Operation(Operator.LOG)"> log10 </button>-->
     <button class="child-flex" @click="Equals()"> = </button>
   </div>
   </div>
