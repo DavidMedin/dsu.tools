@@ -1,29 +1,24 @@
 <script setup>
 import { inject, computed } from "vue";
+import { serialize, to as convert, sRGB_Linear, toGamut } from "colorjs.io/fn";
+import {
+    truncToTwoDecimalPlaces,
+    fmt_convert,
+    to_hex,
+} from "../../colorUtils.js";
+
+// import Color from "colorjs.io";
 import CopyableText from "../CopyableText.vue";
 
-function truncToTwoDecimalPlaces(n) {
-    return Math.floor(n * 100) / 100;
-}
-
 const props = defineProps({
-    color: { type: Array, required: true },
+    color: { type: Object, required: true },
     color_space_index: { type: Number, required: true },
 });
 const color_spaces = inject("ColorSpaces");
-const toRGBHex = computed(
-    () => color_spaces[props.color_space_index].conversions.toRGBHex,
-);
-const rgb_hex = computed(() => toRGBHex.value(props.color));
+const rgb_hex = computed(() => to_hex(props.color));
 
-const hct = computed(() =>
-    color_spaces[0].conversions
-        .fromRGBHex(rgb_hex.value)
-        .map(truncToTwoDecimalPlaces),
-);
-const rgb = computed(() =>
-    color_spaces[1].conversions.fromRGBHex(rgb_hex.value),
-);
+const hct = computed(() => fmt_convert(props.color, color_spaces[0]));
+const rgb = computed(() => fmt_convert(props.color, color_spaces[1]));
 </script>
 
 <template>
@@ -37,11 +32,8 @@ const rgb = computed(() =>
         <tbody>
             <tr>
                 <td>
-                    <CopyableText :text="'#' + rgb_hex" />
+                    <CopyableText :text="rgb_hex" />
                 </td>
-                <td><CopyableText :text="rgb[0]" /></td>
-                <td><CopyableText :text="rgb[1]" /></td>
-                <td><CopyableText :text="rgb[2]" /></td>
             </tr>
             <tr>
                 <td>

@@ -1,6 +1,12 @@
 <script setup>
 import { computed, inject } from "vue";
+import { serialize } from "colorjs.io/fn";
 import ColorSlider from "./ColorSlider.vue";
+import {
+    truncToTwoDecimalPlaces,
+    fmt_convert,
+    to_hex,
+} from "../../colorUtils.js";
 
 // Controlled by the sliders.
 // Takes in an index into the array
@@ -14,12 +20,18 @@ const color = defineModel("color");
 
 const color_spaces = inject("ColorSpaces");
 let space = computed(() => color_spaces[props.color_space_index]);
-
+color_spaces;
 // Computed from 'color' whenever it changes.
 // sRGB can be though of as simply RGB. I don't know much about color theory :(
 const srgb_color_hex = computed(() => {
-    return space.value.conversions.toRGBHex(color.value);
+    // return space.value.conversions.toRGBHex(color.value);
+    // return serialize(color.value, { format: "hex" });
+    return to_hex(color.value);
 });
+
+const space_variables = computed(() =>
+    Object.keys(space.value.coords).map((k) => space.value.coords[k]),
+);
 </script>
 
 <template>
@@ -27,12 +39,13 @@ const srgb_color_hex = computed(() => {
         <div
             id="color-view"
             :style="{
-                backgroundColor: '#' + srgb_color_hex,
+                backgroundColor: srgb_color_hex,
             }"
         ></div>
 
         <input type="text" />
         <div class="slider-div">
+            <label>{{ space_variables[0].name }}</label>
             <input
                 type="number"
                 step="0.01"
@@ -42,12 +55,12 @@ const srgb_color_hex = computed(() => {
             <ColorSlider
                 :color_space="space"
                 v-model:color="color"
-                :max_value="space.components[0].range[1]"
-                :variable_index="0"
+                :coord_name="'h'"
             />
         </div>
 
         <div class="slider-div">
+            <label>{{ space_variables[1].name }}</label>
             <input
                 type="number"
                 step="0.01"
@@ -57,12 +70,12 @@ const srgb_color_hex = computed(() => {
             <ColorSlider
                 :color_space="space"
                 v-model:color="color"
-                :max_value="space.components[1].range[1]"
-                :variable_index="1"
+                :coord_name="'c'"
             />
         </div>
 
         <div class="slider-div">
+            <label>{{ space_variables[2].name }}</label>
             <input
                 type="number"
                 step="0.01"
@@ -72,8 +85,7 @@ const srgb_color_hex = computed(() => {
             <ColorSlider
                 :color_space="space"
                 v-model:color="color"
-                :max_value="space.components[2].range[1]"
-                :variable_index="2"
+                :coord_name="'t'"
             />
         </div>
     </div>

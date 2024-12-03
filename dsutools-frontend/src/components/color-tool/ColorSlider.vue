@@ -1,6 +1,19 @@
 <script setup>
 import { onMounted, useTemplateRef, watch, computed, ref } from "vue";
-
+import {
+    serialize,
+    to as convert,
+    set,
+    get,
+    toGamut,
+    sRGB,
+    sRGB_Linear,
+} from "colorjs.io/fn";
+import {
+    truncToTwoDecimalPlaces,
+    fmt_convert,
+    to_hex,
+} from "../../colorUtils.js";
 // Input/Output Model for the Color Slider:
 // {
 // [parameter] colorSpace : Function(colorspace-color) -> sRGB-color-hex
@@ -13,20 +26,18 @@ const props = defineProps({
         type: Object,
         required: true,
     },
-    max_value: {
-        type: Number,
-        required: true,
-    },
-    variable_index: {
-        type: Number,
+    coord_name: {
+        type: String,
         required: true,
     },
 });
 let color = defineModel("color");
-
+const max_value = computed(
+    () => props.color_space.coords[props.coord_name].refRange[1],
+);
 // Only used for the Handle's background color.
 const input_color_as_hex = computed(() => {
-    return props.color_space.conversions.toRGBHex(color.value);
+    return to_hex(color.value);
 });
 
 // Some constants.
@@ -42,43 +53,52 @@ let slider_transform_style = ref({
 
 let pressed = false;
 
-function hexToBytes(hex) {
-    let bytes = [];
-    for (let c = 0; c < hex.length; c += 2)
-        bytes.push(parseInt(hex.substr(c, 2), 16));
-    return bytes;
-}
-function truncToTwoDecimalPlaces(n) {
-    return Math.floor(n * 100) / 100;
-}
 function handlePosXToVariable(x) {
-    return truncToTwoDecimalPlaces((x / slider_width_px) * props.max_value);
+    return truncToTwoDecimalPlaces((x / slider_width_px) * max_value.value);
 }
 function colorToHandlePosX(color_in) {
-    return (color_in[props.variable_index] * slider_width_px) / props.max_value;
+    return (
+        (get(color_in, [props.color_space, props.coord_name]) *
+            slider_width_px) /
+        max_value.value
+    );
 }
 
-function handlePosXToHexColor(x) {
+function handlePosXToBytes(x) {
     // Create the color in the user's color space.
     // It uses the color provided in props.in_color as the base,
     // then modifies the variable at props.variable_index with the
     // value the slider represents.
-    let color_space_color = color.value.with(
-        props.variable_index,
+    // let color_space_color = color.value.with(
+    //     props.coord_name,
+    //     handlePosXToVariable(x),
+    // );
+
+    // Create a copy of the color so we don't modify the original color.
+    let tmp_color = { ...props.color };
+    set(
+        tmp_color,
+        [props.color_space, props.coord_name],
         handlePosXToVariable(x),
     );
 
     // Convert the color from the user's color space to sRGB as hex.
-    let hex_color = props.color_space.conversions.toRGBHex(color_space_color);
+    let rgb_color = toGamut(convert(tmp_color, sRGB_Linear));
+    let bytes = [
+        rgb_color.coords[0] * 255,
+        rgb_color.coords[1] * 255,
+        rgb_color.coords[2] * 255,
+        255,
+    ];
 
     // Assert that it returns only 6 characters, otherwise it isn't a 3-value hex code!
-    if (hex_color.length != 6) {
-        console.log(
-            `uh oh, the hex color ${hex_color} has more than 6 characters!`,
-        );
-    }
+    // if (hex_color.length != 6) {
+    //     console.log(
+    //         `uh oh, the hex color ${hex_color} has more than 6 characters!`,
+    //     );
+    // }
 
-    return hex_color;
+    return bytes;
 }
 
 function handleTransformStyle(x) {
@@ -108,9 +128,9 @@ function render() {
             slider_width_px * slider_height_px * 4,
         );
         for (let i = 0; i < slider_width_px; i++) {
-            let hex_color = handlePosXToHexColor(i);
-            let new_color = hexToBytes(hex_color);
-            new_color.push(255);
+            let new_color = handlePosXToBytes(i);
+            // let new_color = hexToBytes(hex_color);
+            // new_color.push(255);
             for (let j = 0; j < slider_height_px; j++) {
                 img_arr.set(new_color, (j * slider_width_px + i) * 4);
             }
@@ -155,7 +175,11 @@ onMounted(() => {
         // And if I write `color[props.variable_index] = ...` then I am not overwriting
         // the array object which means the 'watch(...)' aren't going to pick
         // up that there wa a change in color.
-        color.value[props.variable_index] = handlePosXToVariable(new_x);
+        set(
+            color.value,
+            [props.color_space, props.coord_name],
+            handlePosXToVariable(new_x),
+        );
     });
     window.addEventListener("mousemove", (e) => {
         if (!pressed) return;
@@ -167,7 +191,11 @@ onMounted(() => {
         new_x = moveHandle(new_x);
 
         // Send the new color variable to the parent component.
-        color.value[props.variable_index] = handlePosXToVariable(new_x);
+        set(
+            color.value,
+            [props.color_space, props.coord_name],
+            handlePosXToVariable(new_x),
+        );
     });
 
     window.addEventListener("mouseup", () => {
@@ -176,8 +204,10 @@ onMounted(() => {
 
     // Inital render and color output. Happens once.
     render();
-    color.value[props.variable_index] = handlePosXToVariable(
-        initial_handle_pos_px,
+    set(
+        color.value,
+        [props.color_space, props.coord_name],
+        handlePosXToVariable(initial_handle_pos_px),
     );
 });
 
@@ -210,12 +240,7 @@ watch(
             There should be a color slide here
         </canvas>
         <svg id="handle" :style="slider_transform_style">
-            <circle
-                cx="12"
-                cy="12"
-                r="11"
-                :fill="'#' + input_color_as_hex"
-            ></circle>
+            <circle cx="12" cy="12" r="11" :fill="input_color_as_hex"></circle>
             <circle
                 cx="12"
                 cy="12"
