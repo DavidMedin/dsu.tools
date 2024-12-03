@@ -12,12 +12,15 @@ const Operator = Object.freeze({ //used to store which operator is currently hap
   MUL: '*',
   DIV: '/',
   EXP: '^',
-  LOG: 'l10'
+  LOG: 'l10',
+  ABS: '|',
+  NEG: '+/-'
 })
 
 var curOp = Operator.NONE
 var cacheOp = Operator.NONE
 var clearText = false
+var numberPressed = false
 
 function Append(input)
 {
@@ -34,7 +37,7 @@ function Append(input)
   
   //adds input at the end of the string
   console.log(input)
-  if(curNumber.value === '0')
+  if(curNumber.value === '0' && input != '.')
   {
     curNumber.value = input
   }
@@ -42,6 +45,7 @@ function Append(input)
   {
     curNumber.value += input
   }
+  numberPressed = true
 }
 
 function Clear()
@@ -64,33 +68,33 @@ function Operation(input)
 {
   //some operations are done when the button is pressed,
   //so they need to be checked before doing the equals
-
-  //if the current operator does not equal none, then that means 
-  //that we are already in a string of calculations. Thus,
-  //calculate. 
-  cacheOp = curOp
-  curOp = input
-  console.log('cacheOP: ', cacheOp)
-  //5 is pressed. 5 is displayed. curOp === n/a, cacheOp === n/a 
-  //plus is pressed, 5 is cached. curOp === +, cacheOp === n/a
-  //6 is pressed. 6 is displayed. curOp === +, cacheOp === n/a
-  //plus is pressed, 11 is calulated, since a plus was used before. 11 is displayed.
-    //curOp === =, cacheOp === +
-  //7 is pressed. Display 7.
-  //plus is pressed, 20 is calculated, since a plus was used before. Display 20
-  //minus is pressed. Nothing is calculated. 20 is still displayed.
-  if(cacheOp !== Operator.NONE)
+  if(input === Operator.LOG)
+  {
+    curNumber.value = Math.log10(curNumber.value)
+  }
+  else if (input === Operator.ABS && curNumber.value < 0)
+  {
+    curNumber.value *= -1
+  }
+  else if (input === Operator.NEG)
+  {
+    curNumber.value = curNumber.value * -1  
+  }
+  else if(curOp !== Operator.NONE && numberPressed )
   {
     Equals()
   }
+  cacheOp = curOp
+  curOp = input
   cacheNum.value = curNumber.value
   clearText = true;
+  numberPressed = false
 }
 
 function Equals()
 {
-  var numA = parseInt(cacheNum.value)
-  var numB = parseInt(curNumber.value)
+  var numA = parseFloat(cacheNum.value)
+  var numB = parseFloat(curNumber.value)
   var calculation = 0
   var doCacheNum = true
 
@@ -165,12 +169,14 @@ function Equals()
     <button class="child-flex" @click="Clear()"> CLR </button>
     <button class="child-flex" @click="ClearMem()"> CLM </button>
     <button class="child-flex" @click="Delete()"> DEL </button>
+    <button class="child-flex" @click="Operation(Operator.NEG)"> -/+ </button>
     <button class="child-flex" @click="Operation(Operator.ADD)"> + </button>
     <button class="child-flex" @click="Operation(Operator.SUB)"> - </button>
     <button class="child-flex" @click="Operation(Operator.MUL)"> * </button>
     <button class="child-flex" @click="Operation(Operator.DIV)"> / </button>
     <button class="child-flex" @click="Operation(Operator.EXP)"> ^ </button>
     <button class="child-flex" @click="Operation(Operator.LOG)"> log10 </button>
+    <button class="child-flex" @click="Operation(Operator.ABS)"> |x| </button>
     <button class="child-flex" @click="Equals()"> = </button>
   </div>
   </div>
