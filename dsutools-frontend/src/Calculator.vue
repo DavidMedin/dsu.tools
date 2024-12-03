@@ -43,6 +43,7 @@ function Append(input)
   if(curNumber.value === '0' && input != '.')
   {
     curNumber.value = input
+    piOrEPressed = false
   }
   else if (input === Math.PI || input === Math.E)
   {
@@ -50,8 +51,13 @@ function Append(input)
   }
   else
   {
-    curNumber.value += input
+    //prevents numbers from appending to pi/e
+    if(curNumber.value === Math.PI || curNumber.value === Math.E)
+      curNumber.value = input
+    else
+      curNumber.value += input
   }
+
   numberPressed = true
 }
 
