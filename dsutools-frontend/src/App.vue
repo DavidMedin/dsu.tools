@@ -6,6 +6,7 @@ import ToolGrid from "./components/ToolGrid.vue";
 import ToolItem from "./components/ToolItem.vue";
 import ToolButton from "./components/ToolButton.vue";
 import QuickLinks from "./components/QuickLinks.vue";
+import Calculator from "./components/Calculator.vue";
 </script>
 
 <template>
@@ -16,7 +17,9 @@ import QuickLinks from "./components/QuickLinks.vue";
             </nav>
             <div>
                 <ToolGrid>
-                    <ToolButton tool_name="Calculator" style="grid-row: 1/3" />
+                    <ToolButton tool_name="Calculator" style="grid-row: 1/3" disabled> 
+                        <Calculator/>
+                    </ToolButton>
                     <ToolButton tool_name="Sodexo Menu" />
                     <ToolButton tool_name="Study Buddy" />
                     <ToolButton tool_name="DSU Events" />
