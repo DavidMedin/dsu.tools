@@ -16,6 +16,7 @@ const Operator = Object.freeze({ //used to store which operator is currently hap
   LN: 'ln',
   LGB: 'xlogy',
   ABS: '|',
+  REC: '1/x',
   NEG: '+/-'
 })
 
@@ -40,6 +41,10 @@ function Append(input)
   //adds input at the end of the string
   console.log(input)
   if(curNumber.value === '0' && input != '.')
+  {
+    curNumber.value = input
+  }
+  else if (input === Math.PI || input === Math.E)
   {
     curNumber.value = input
   }
@@ -85,6 +90,10 @@ function Operation(input)
   else if (input === Operator.NEG)
   {
     curNumber.value = curNumber.value * -1  
+  }
+  else if (input === Operator.REC)
+  {
+    curNumber.value = 1 / curNumber.value
   }
   else if(curOp !== Operator.NONE && numberPressed )
   {
@@ -190,6 +199,7 @@ function Equals()
     <button class="child-flex" @click="Operation(Operator.LOG)"> log10 </button>
     <button class="child-flex" @click="Operation(Operator.LN)"> ln </button>
     <button class="child-flex" @click="Operation(Operator.LGB)"> x log base y </button>
+    <button class="child-flex" @click="Operation(Operator.REC)"> 1/x </button>
     <button class="child-flex" @click="Operation(Operator.ABS)"> |x| </button>
     <button class="child-flex" @click="Equals()"> = </button>
   </div>
