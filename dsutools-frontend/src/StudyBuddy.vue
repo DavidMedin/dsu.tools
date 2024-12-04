@@ -14,6 +14,17 @@ function closeNewFlashcardSetForm() {
     isFormVisible.value = false;
 }
 
+function addFlashcardSetToSidebar(flashcardSet) {
+    let savedSets = document.getElementById("saved-sets");
+    let flashcardSetElement = document.createElement("div");
+    flashcardSetElement.textContent = flashcardSet.name;
+    flashcardSetElement.style.cursor = "pointer";
+    flashcardSetElement.addEventListener("click", () => {
+        console.log("Flashcard set clicked: ", flashcardSet);
+    });
+    savedSets.appendChild(flashcardSetElement);
+}
+
 onMounted(() => {
     let newFlashcardSetForm = document.getElementById("newFlashcardSetForm");
     
@@ -68,6 +79,7 @@ onMounted(() => {
                     }
                     else {
                         console.log("Flashcard set created successfully!");
+                        addFlashcardSetToSidebar(requestBody.flashcard_deck);
                     }
                 })
                 .catch((error) => {
