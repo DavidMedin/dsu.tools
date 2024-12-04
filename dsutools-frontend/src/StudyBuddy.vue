@@ -16,22 +16,40 @@ function closeNewFlashcardSetForm() {
 
 onMounted(() => {
     let newFlashcardSetForm = document.getElementById("newFlashcardSetForm");
-
+    
     newFlashcardSetForm.addEventListener("submit", (e) => {
+        e.preventDefault();
         let setName = document.getElementsByName("name")[0].value;
         let setDescription = document.getElementsByName("description")[0].value;
+
+        let username = localStorage.getItem("username");
+        if (username == null) {
+            alert("Please log in to create a flashcard set!");
+            return;
+        }
 
         if (setName == "") {
             alert("Set Name cannot be empty!");
         } else {
-            let formData = {
-                name: setName,
-                description: setDescription,
+
+            console.log(
+                `This form has a setName of ${setName} and setDescription of ${setDescription}`,
+            );
+
+            let requestBody = {
+                username: username,
+                flashcard_deck:
+                {
+                    name: setName,
+                    description: setDescription,
+                }
             };
 
-            fetch("/flashcard-set", {
+            console.log("Request body: ", requestBody);
+
+            fetch("/create-flashcard-deck", {
                 method: "POST",
-                body: JSON.stringify(formData),
+                body: JSON.stringify(requestBody),
                 headers: {
                     "Content-Type": "application/json",
                 },
@@ -54,8 +72,8 @@ onMounted(() => {
                     console.error("Error: ", error);
                 });
 
-            setName = "";
-            setDescription = "";
+            document.getElementById("newFlashcardSetForm").reset();
+            closeNewFlashcardSetForm();
         }
     })
 })
@@ -63,7 +81,7 @@ onMounted(() => {
 </script>
 
 <template>
-    <form action="" class="form-popup round-box" id="newFlashcardSetForm" :class="{ 'show': isFormVisible }">
+    <form class="form-popup round-box" id="newFlashcardSetForm" :class="{ 'show': isFormVisible }">
         <h1>New Flashcard Set</h1>
 
         <label for="name"><b>Name</b></label>
