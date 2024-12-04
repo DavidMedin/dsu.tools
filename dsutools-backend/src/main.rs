@@ -97,6 +97,36 @@ async fn is_token_authenticated(
 }
 
 #[instrument(skip(db))]
+async fn get_user_token(
+    db: &mut Connection<DsuToolsDB>,
+    user_id: i64,
+) -> Result<Option<String>, sqlx::Error> {
+    // Generate s SQL query
+    let query = sqlx::query("SELECT * FROM SessionTokens WHERE user_id = ?")
+    .bind(user_id);
+
+    // Send the query to the database.
+    let query_result = query.fetch_one(&mut ***db).await;
+
+    match query_result {
+        Ok(result_row) => {
+            let token: String = result_row.get("token");
+            return Ok(Some(token));
+        }
+        Err(e) => {
+            if let sqlx::Error::RowNotFound = e {
+                // The user doesn't exist; gracefully return.
+                return Ok(None);
+            } else {
+                // Something else is wrong!
+                error!("Failed to get query DB for User ID with Username : {}", e);
+                return Err(e);
+            }
+        }
+    }
+}
+
+#[instrument(skip(db))]
 async fn register_session_token(
     db: &mut Connection<DsuToolsDB>,
     user_id: i64,
@@ -135,6 +165,58 @@ async fn delete_session_token(
     return Ok(());
 }
 
+#[instrument(skip(db))]
+async fn get_flashcard_deck_id(
+    db: &mut Connection<DsuToolsDB>,
+    user_id: i64,
+    flashcard_deck_name: &String,
+) -> Result<Option<i64>, sqlx::Error> {
+    // Generate a SQL query.
+    let query = sqlx::query("SELECT * FROM FlashcardDecks WHERE deck_name = ? AND user_id = ?")
+    .bind(flashcard_deck_name)
+    .bind(user_id);
+
+    // Perform the query to the database.
+    let query_result = query.fetch_one(&mut ***db).await;
+
+    match query_result {
+        Ok(result_row) => {
+            let id: i64 = result_row.get("id");
+            return Ok(Some(id));
+        }
+        Err(e) => {
+            if let sqlx::Error::RowNotFound = e {
+                // The flashcard deck doesn't exist; gracefully return.
+                return Ok(None);
+            } else {
+                // Something else is wrong!
+                error!("Failed to get query DB for Flashcard ID with Flashcard Deck Name : {}", e);
+                return Err(e);
+            }
+        }
+    }
+}
+
+#[instrument(skip(db))]
+async fn register_flashcard_deck(
+    db: &mut Connection<DsuToolsDB>,
+    user_id: i64,
+    deck_name: &String,
+    deck_description: &String,
+) -> Result<(), sqlx::Error> {
+    // Generate a SQL query
+    let query = sqlx::query("INSERT INTO FlashcardDecks (user_id, deck_name, deck_description) VALUES (?, ?, ?)")
+    .bind(user_id)
+    .bind(deck_name)
+    .bind(deck_description);
+
+    // Send the query to the database.
+    let query_result = query.execute(&mut ***db).await;
+    query_result?; // Return if query_result is an Err(...)
+
+    return Ok(());
+}
+
 #[derive(Database)] // A Rust macro that operates on the DsuToolsDB struct.
 #[database("dsutools_db")] // Links the DsuToolsDB struct to the "dsutools_db" database mentioned in the Rocket.toml file.
 struct DsuToolsDB(sqlx::SqlitePool); // A struct with one field, a SqlitePool.
@@ -149,6 +231,18 @@ struct User {
 struct SessionUser {
     username: String,
     token: String,
+}
+
+#[derive(Deserialize, Debug)]
+struct CreateNewFlashcardDeck {
+    username: String,
+    flashcard_deck: FlashcardDeck,
+}
+
+#[derive(Deserialize, Debug)]
+struct FlashcardDeck {
+    name: String,
+    description: String,
 }
 
 // v------ This is a Function Macro in Rust. It is some code that the Rocket library
@@ -384,6 +478,66 @@ fn bad_delete_user() -> Status {
     return Status::BadRequest;
 }
 
+#[instrument(skip(db))]
+#[post("/create-flashcard-deck", format="application/json", data="<flashcard_deck_request>")]
+async fn create_flashcard_deck(
+    flashcard_deck_request: Json<CreateNewFlashcardDeck>,
+    mut db: Connection<DsuToolsDB>,
+) -> Status {
+    let username = &flashcard_deck_request.username;
+    let flashcard_deck_name = &flashcard_deck_request.flashcard_deck.name;
+    let flashcard_deck_description = &flashcard_deck_request.flashcard_deck.description;
+
+    // Verify the user exists.
+    let user_id = match get_user_id(&mut db, username).await {
+        Ok(maybe) => match maybe {
+            Some(id) => id,
+            None => return Status::BadRequest,
+        },
+        Err(e) => {
+            error!("Failed to test if a user exists : {}", e);
+            return Status::InternalServerError;
+        }
+    };
+
+    // Verify the user is logged in aka if session token under that user exists.
+    let token = match get_user_token(&mut db, user_id).await {
+        Ok(maybe) => match maybe {
+            Some(token) => token,
+            None => return Status::BadRequest,
+        },
+        Err(e) => {
+            error!("failed to test if a session token under that user id exists: {}", e);
+            return Status::InternalServerError;
+        }
+    };
+
+    // Test to see if the flashcard deck name already exists.
+    match get_flashcard_deck_id(&mut db, user_id, &flashcard_deck_name).await {
+        Ok(Some(_)) => {
+            return Status::Conflict; // the flashcard deck name already exists
+        }
+        Err(e) => {
+            error!("Failed to test if the flashcard deck name already exists : {}", e);
+            return Status::InternalServerError;
+        }
+        _ => {} // The 'else' clause. This is executed when the flashcard deck name is not in the database
+    }
+
+    if let Err(e) = register_flashcard_deck(&mut db, user_id, &flashcard_deck_name, &flashcard_deck_description).await {
+        error!("Failed to register Flashcard Deck into DB: {}", e);
+        return Status::InternalServerError;
+    }    
+
+    return Status::Created;
+}
+
+#[instrument]
+#[post("/create-flashcard-deck", rank=2)]
+async fn bad_create_flashcard_deck() -> Status {
+    return Status::BadRequest;
+}
+
 // 'rocket::main' is another macro that tells Rocket that this is our main function.
 // While compiling, Rocket will modify this function using witchcraft.
 #[instrument]
@@ -414,7 +568,9 @@ async fn main() -> Result<(), rocket::Error> {
                 logout,
                 bad_logout,
                 delete_user,
-                bad_delete_user
+                bad_delete_user,
+                create_flashcard_deck,
+                bad_create_flashcard_deck
             ],
         )
         .mount("/", FileServer::from("../dsutools-frontend/dist/"))
