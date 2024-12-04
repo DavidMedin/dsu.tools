@@ -4,9 +4,9 @@ import Page from "./components/Page.vue";
 import { onMounted } from "vue";
 
 onMounted(() => {
-    let loginForm = document.getElementById("register-form");
+    let registrationForm = document.getElementById("register-form");
 
-    loginForm.addEventListener("submit", (e) => {
+    registrationForm.addEventListener("submit", (e) => {
         e.preventDefault();
 
         let username = document.getElementById("username");
@@ -20,6 +20,8 @@ onMounted(() => {
             console.log(
                 `This form has a username of ${username.value} and password of ${password.value}`,
             );
+
+            let username_verified = username.value;
 
             let formData = {
                 username: username.value,
@@ -46,7 +48,9 @@ onMounted(() => {
                         // throw new Error("Not ok");
                     }
                     else{
+                        console.log(username_verified + " has been registered successfully!");
                         localStorage.setItem("loggedIn", 'true');
+                        localStorage.setItem("username", username_verified);
                         window.location.replace("/");
                     }
                 })
@@ -54,8 +58,7 @@ onMounted(() => {
                     console.error("Error: ", error);
                 });
 
-            username.value = "";
-            password.value = "";
+            document.getElementById("register-form").reset();
         }
     });
 });

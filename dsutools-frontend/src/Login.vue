@@ -21,6 +21,8 @@ onMounted(() => {
                 `This form has a username of ${username.value} and password of ${password.value}`,
             );
 
+            let username_verified = username.value;
+
             let formData = {
                 username: username.value,
                 password: password.value,
@@ -47,6 +49,7 @@ onMounted(() => {
                     }
                     else{
                         localStorage.setItem("loggedIn", 'true');
+                        localStorage.setItem("username", username_verified);
                         window.location.replace("/");
                     }
                 })
@@ -54,8 +57,7 @@ onMounted(() => {
                     console.error("Error: ", error);
                 });
 
-            username.value = "";
-            password.value = "";
+            document.getElementById("login-form").reset();
         }
     });
 });
