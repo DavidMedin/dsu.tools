@@ -52,3 +52,19 @@ Request:
 Response:
 - `200` (Ok): Nothing,
 - `500` (Internal Server Error): Something went wrong, likely with the database.
+
+### POST `/create-flashcard-deck`
+Request:
+```json
+{
+  "username": "the_username",
+  "flashcard_deck":
+  {
+    "name": "the_flashcard_deck_name",
+    "description": "the_flashcard_deck_description",
+  }
+}
+```
+Response:
+- `200` (Ok): Nothing,
+- `500` {Internal Server Error}: Something went wrong, likely with the database.

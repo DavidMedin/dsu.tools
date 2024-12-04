@@ -19,3 +19,11 @@ CREATE TABLE SessionTokens (
     token TEXT NOT NULL,
     FOREIGN KEY (user_id) REFERENCES Users(id)
 );
+
+CREATE TABLE FlashcardDecks (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    deck_name TEXT NOT NULL,
+    deck_description TEXT,
+    user_id INTEGER NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES Users(id)
+);
