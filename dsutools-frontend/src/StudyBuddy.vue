@@ -2,21 +2,63 @@
 import Flashcard from "./components/Flashcard.vue";
 import Page from "./components/Page.vue";
 
-import { ref } from "vue";
+import { onMounted, ref } from "vue";
 
 const isFormVisible = ref(false);
 
 function openNewFlashcardSetForm() {
     isFormVisible.value = true;
-    style.opacity = 1;
-    style.transition = "opacity 0.5s ease";
 }
 
 function closeNewFlashcardSetForm() {
     isFormVisible.value = false;
-    style.opacity = 0;
-    style.transition = "opacity 0.5s ease";
 }
+
+onMounted(() => {
+    let newFlashcardSetForm = document.getElementById("newFlashcardSetForm");
+
+    newFlashcardSetForm.addEventListener("submit", (e) => {
+        let setName = document.getElementsByName("name")[0].value;
+        let setDescription = document.getElementsByName("description")[0].value;
+
+        if (setName == "") {
+            alert("Set Name cannot be empty!");
+        } else {
+            let formData = {
+                name: setName,
+                description: setDescription,
+            };
+
+            fetch("/flashcard-set", {
+                method: "POST",
+                body: JSON.stringify(formData),
+                headers: {
+                    "Content-Type": "application/json",
+                },
+            })
+                .then((response) => {
+                    if (!response.ok) {
+                        const message = document.createElement("p");
+                        message.textContent = "Invalid flashcard set name or description";
+                        message.style.color = "red";
+                        document.getElementById("newFlashcardSetForm").appendChild(message);
+
+                        setTimeout(() => {
+                            message.remove();
+                        }, 5000);
+                    } else {
+                        console.log("Flashcard set created successfully!");
+                    }
+                })
+                .catch((error) => {
+                    console.error("Error: ", error);
+                });
+
+            setName = "";
+            setDescription = "";
+        }
+    })
+})
 
 </script>
 
@@ -28,7 +70,7 @@ function closeNewFlashcardSetForm() {
         <input type="text" placeholder="Enter Name" name="name" required>
 
         <label for="description"><b>Description</b></label>
-        <input type="description" placeholder="Enter Description" name="description" required>
+        <input type="description" placeholder="Enter Description" name="description">
 
         <button type="submit" class="btn">Create</button>
         <button type="button" class="btn cancel" @click="closeNewFlashcardSetForm">Close</button>
