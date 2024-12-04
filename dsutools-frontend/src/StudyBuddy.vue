@@ -57,23 +57,25 @@ onMounted(() => {
                 .then((response) => {
                     if (!response.ok) {
                         const message = document.createElement("p");
-                        message.textContent = "Invalid flashcard set name or description";
+                        message.textContent = "Invalid flashcard set name.";
                         message.style.color = "red";
                         document.getElementById("newFlashcardSetForm").appendChild(message);
-
+                        
                         setTimeout(() => {
                             message.remove();
                         }, 5000);
-                    } else {
+                        // throw new Error("Not ok");
+                    }
+                    else {
                         console.log("Flashcard set created successfully!");
                     }
                 })
                 .catch((error) => {
                     console.error("Error: ", error);
                 });
-
-            document.getElementById("newFlashcardSetForm").reset();
-            closeNewFlashcardSetForm();
+                
+                document.getElementById("newFlashcardSetForm").reset();
+                // closeNewFlashcardSetForm();
         }
     })
 })

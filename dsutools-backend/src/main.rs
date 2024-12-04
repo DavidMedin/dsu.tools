@@ -507,7 +507,7 @@ async fn create_flashcard_deck(
             None => return Status::BadRequest,
         },
         Err(e) => {
-            error!("failed to test if a session token under that user id exists: {}", e);
+            error!("Failed to test if a session token under that user id exists: {}", e);
             return Status::InternalServerError;
         }
     };
