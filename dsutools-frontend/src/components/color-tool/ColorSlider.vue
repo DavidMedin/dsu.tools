@@ -32,9 +32,14 @@ const props = defineProps({
     },
 });
 let color = defineModel("color");
-const max_value = computed(
-    () => props.color_space.coords[props.coord_name].refRange[1],
-);
+const max_value = computed(() => {
+    let coord = props.color_space.coords[props.coord_name];
+    if (coord.range == null) {
+        return coord.refRange[1];
+    } else {
+        return coord.range[1];
+    }
+});
 // Only used for the Handle's background color.
 const input_color_as_hex = computed(() => {
     return to_hex(color.value);
@@ -83,7 +88,7 @@ function handlePosXToBytes(x) {
     );
 
     // Convert the color from the user's color space to sRGB as hex.
-    let rgb_color = toGamut(convert(tmp_color, sRGB_Linear));
+    let rgb_color = convert(tmp_color, sRGB_Linear);
     let bytes = [
         rgb_color.coords[0] * 255,
         rgb_color.coords[1] * 255,
@@ -224,7 +229,7 @@ watch(
     () => props.color_space,
     (new_val, old_val) => {
         render();
-        moveHandle(colorToHandlePosX(new_val));
+        moveHandle(colorToHandlePosX(color.value));
     },
 );
 </script>

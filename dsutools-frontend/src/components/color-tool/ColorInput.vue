@@ -1,6 +1,6 @@
 <script setup>
 import { computed, inject } from "vue";
-import { serialize } from "colorjs.io/fn";
+import { serialize, get } from "colorjs.io/fn";
 import ColorSlider from "./ColorSlider.vue";
 import {
     truncToTwoDecimalPlaces,
@@ -20,7 +20,7 @@ const color = defineModel("color");
 
 const color_spaces = inject("ColorSpaces");
 let space = computed(() => color_spaces[props.color_space_index]);
-color_spaces;
+// color_spaces;
 // Computed from 'color' whenever it changes.
 // sRGB can be though of as simply RGB. I don't know much about color theory :(
 const srgb_color_hex = computed(() => {
@@ -32,6 +32,14 @@ const srgb_color_hex = computed(() => {
 const space_variables = computed(() =>
     Object.keys(space.value.coords).map((k) => space.value.coords[k]),
 );
+
+const color_getters = {};
+for (const [key, value] of Object.entries(space.value.coords)) {
+    color_getters[key] = computed({
+        get: () => get(color.value, [space.value, key]),
+        set: (new_value) => set(color.value, [space.value, key], new_value),
+    });
+}
 </script>
 
 <template>
@@ -44,48 +52,12 @@ const space_variables = computed(() =>
         ></div>
 
         <input type="text" />
-        <div class="slider-div">
-            <label>{{ space_variables[0].name }}</label>
-            <input
-                type="number"
-                step="0.01"
-                class="text-input"
-                v-model="color[0]"
-            />
+        <div class="slider-div" v-for="(coord, index) in space.coords">
+            <label>{{ coord.name }}</label>
             <ColorSlider
                 :color_space="space"
                 v-model:color="color"
-                :coord_name="'h'"
-            />
-        </div>
-
-        <div class="slider-div">
-            <label>{{ space_variables[1].name }}</label>
-            <input
-                type="number"
-                step="0.01"
-                class="text-input"
-                v-model="color[1]"
-            />
-            <ColorSlider
-                :color_space="space"
-                v-model:color="color"
-                :coord_name="'c'"
-            />
-        </div>
-
-        <div class="slider-div">
-            <label>{{ space_variables[2].name }}</label>
-            <input
-                type="number"
-                step="0.01"
-                class="text-input"
-                v-model="color[2]"
-            />
-            <ColorSlider
-                :color_space="space"
-                v-model:color="color"
-                :coord_name="'t'"
+                :coord_name="index"
             />
         </div>
     </div>
