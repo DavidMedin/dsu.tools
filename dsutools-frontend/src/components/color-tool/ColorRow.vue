@@ -6,20 +6,10 @@ import ColorInput from "./ColorInput.vue";
 
 // For now, this is an HCT color.
 //Be careful! Do NOT set the whole array, only the components individually!
-// let color = ref([0, 0, 0]);
 let color = ref({ space: "hct", coords: [0, 50, 50] });
 
 // index into the global 'ColorSpaces' object. Get it with inject("ColorSpaces")
-// const color_spaces = inject("ColorSpaces");
 let color_space_index = ref(0);
-
-// watch(color_space_index, (new_val, old_val) => {
-//     let old_hex = color_spaces[old_val].conversions.toRGBHex(color.value);
-//     let new_color = color_spaces[new_val].conversions.fromRGBHex(old_hex);
-//     color.value[0] = new_color[0];
-//     color.value[1] = new_color[1];
-//     color.value[2] = new_color[2];
-// });
 </script>
 
 <template>

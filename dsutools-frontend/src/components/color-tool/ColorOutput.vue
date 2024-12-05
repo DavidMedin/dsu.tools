@@ -13,7 +13,6 @@ import {
     to_hex,
 } from "../../colorUtils.js";
 
-// import Color from "colorjs.io";
 import CopyableText from "../CopyableText.vue";
 
 const props = defineProps({
@@ -22,9 +21,6 @@ const props = defineProps({
 });
 const color_spaces = inject("ColorSpaces");
 const rgb_hex = computed(() => to_hex(props.color));
-
-// const hct = computed(() => fmt_convert(props.color, color_spaces[0]));
-// const rgb = computed(() => fmt_convert(props.color, color_spaces[1]));
 
 let spaces = computed(() => {
     let spaces = [];
@@ -36,7 +32,6 @@ let spaces = computed(() => {
         let func_name = space_name + "(";
         let fmted_color = fmt_convert(props.color, space);
         for (const coord of fmted_color) {
-            // func_name += coord.name + ","
             func_name += coord + ",";
         }
         func_name = func_name.substr(0, func_name.length - 1);

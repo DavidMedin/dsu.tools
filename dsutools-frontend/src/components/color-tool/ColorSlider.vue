@@ -16,10 +16,9 @@ import {
 } from "../../colorUtils.js";
 // Input/Output Model for the Color Slider:
 // {
-// [parameter] colorSpace : Function(colorspace-color) -> sRGB-color-hex
-// [input] (model) color : Array (color)
-// [input] max_value : Number
-// [input] variable_index : Number
+// [parameter] colorSpace : ColorJS.io colorspace object
+// [input] (model) color : colorJS.io color object
+// [input] coord_name : string
 // }
 const props = defineProps({
     color_space: {
@@ -74,10 +73,6 @@ function handlePosXToBytes(x) {
     // It uses the color provided in props.in_color as the base,
     // then modifies the variable at props.variable_index with the
     // value the slider represents.
-    // let color_space_color = color.value.with(
-    //     props.coord_name,
-    //     handlePosXToVariable(x),
-    // );
 
     // Create a copy of the color so we don't modify the original color.
     let tmp_color = { ...props.color };
@@ -95,13 +90,6 @@ function handlePosXToBytes(x) {
         rgb_color.coords[2] * 255,
         255,
     ];
-
-    // Assert that it returns only 6 characters, otherwise it isn't a 3-value hex code!
-    // if (hex_color.length != 6) {
-    //     console.log(
-    //         `uh oh, the hex color ${hex_color} has more than 6 characters!`,
-    //     );
-    // }
 
     return bytes;
 }
@@ -134,8 +122,6 @@ function render() {
         );
         for (let i = 0; i < slider_width_px; i++) {
             let new_color = handlePosXToBytes(i);
-            // let new_color = hexToBytes(hex_color);
-            // new_color.push(255);
             for (let j = 0; j < slider_height_px; j++) {
                 img_arr.set(new_color, (j * slider_width_px + i) * 4);
             }
@@ -175,11 +161,6 @@ onMounted(() => {
             transform: handleTransformStyle(new_x),
         };
 
-        // I am writing it like this because if I write:
-        // `color = ...` it would overwrite the ref, not the ref's value.
-        // And if I write `color[props.variable_index] = ...` then I am not overwriting
-        // the array object which means the 'watch(...)' aren't going to pick
-        // up that there wa a change in color.
         set(
             color.value,
             [props.color_space, props.coord_name],
@@ -217,8 +198,6 @@ onMounted(() => {
 });
 
 // Whenever the parent's color changes, re-render the slider.
-// Since we are watching a prop ( a model ) that has an array, we need to use `.value`.
-//  Otherwise, we would only say `color` if it was just a number. Something about deep reactivity I think.
 watch(color.value, (new_val, old_val) => {
     render();
     moveHandle(colorToHandlePosX(new_val));

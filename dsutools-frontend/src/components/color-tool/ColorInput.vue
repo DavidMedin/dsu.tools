@@ -20,18 +20,12 @@ const color = defineModel("color");
 
 const color_spaces = inject("ColorSpaces");
 let space = computed(() => color_spaces[props.color_space_index]);
-// color_spaces;
+
 // Computed from 'color' whenever it changes.
 // sRGB can be though of as simply RGB. I don't know much about color theory :(
 const srgb_color_hex = computed(() => {
-    // return space.value.conversions.toRGBHex(color.value);
-    // return serialize(color.value, { format: "hex" });
     return to_hex(color.value);
 });
-
-const space_variables = computed(() =>
-    Object.keys(space.value.coords).map((k) => space.value.coords[k]),
-);
 
 const color_getters = {};
 for (const [key, value] of Object.entries(space.value.coords)) {
