@@ -75,6 +75,8 @@ function ClearMem()
 function Delete()
 {
   curNumber.value = curNumber.value.substring(0, curNumber.value.length-1)
+  if(curNumber.value.length === 0)
+    curNumber.value = '0'
 }
 
 function Operation(input)
