@@ -278,10 +278,23 @@ async fn login(
     // 2. Get the user's ID from the result.
     let user_id: i64 = user_row.get("id");
 
-    // 3. Generate a new session token.
+    // 3. Check if the user is already logged in.
+    match get_user_token(&mut db, user_id).await {
+        Ok(Some(token)) => {
+            // If the user is already logged in, return a HTTP 409 Conflict status code.
+            return Status::Conflict;
+        }
+        Ok(None) => {}
+        Err(e) => {
+            error!("Failed to test if a session token under that user id exists: {}", e);
+            return Status::InternalServerError;
+        }
+    }
+
+    // 4. Generate a new session token.
     let mut token: String = new_session_token();
 
-    // 4. Test to see if this session_token exists in the database.
+    // 5. Test to see if this session_token exists in the database.
     //    Regenerate the token if it already exists.
     while match is_token_authenticated(&mut db, user_id, &token).await {
         Ok(found) => found,
@@ -294,14 +307,14 @@ async fn login(
         token = new_session_token();
     }
 
-    // 5. Register the token in the database.
+    // 6. Register the token in the database.
     if let Err(e) = register_session_token(&mut db, user_id, &token).await {
         error!("Failed to register Session Token into DB : {}", e);
         return Status::InternalServerError; // Database state is likely broken now.
                                             // TODO: Maybe make sqlite sessions?
     }
 
-    //6. Add the token to the session cookie.
+    //7. Add the token to the session cookie.
     //TODO: Make this secure.
     cookies.add(("session", token.clone()));
 
@@ -494,7 +507,7 @@ async fn delete_user(
         return Status::InternalServerError;
     }
 
-    cookies.remove(("session", token));
+    cookies.remove(("session", token.clone()));
     return Status::Ok;
 }
 

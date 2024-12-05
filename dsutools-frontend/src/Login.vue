@@ -9,11 +9,17 @@ onMounted(() => {
     loginForm.addEventListener("submit", (e) => {
         e.preventDefault();
 
+        if (localStorage.getItem("loggedIn") === "true") {
+            alert("You are already logged in!");
+            return;
+        }
+
         let username = document.getElementById("username");
         let password = document.getElementById("password");
 
         if (username.value == "" || password.value == "") {
             alert("Ensure you input a value in both fields!");
+            return;
         } else {
             // perform operation with form input
             // alert("This form has been successfully submitted!");

@@ -25,6 +25,11 @@ function logout() {
     const loggedIn = localStorage.getItem('loggedIn') === 'true'; // Check stored value as string
     const username = localStorage.getItem('username');
 
+    if (loggedIn === null) {
+        alert("You are not logged in!");
+        return;
+    }
+
     if (loggedIn && username != null) {
         fetch("/logout", {
             method: "POST",
