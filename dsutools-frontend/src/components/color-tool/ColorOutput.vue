@@ -1,6 +1,12 @@
 <script setup>
 import { inject, computed } from "vue";
-import { serialize, to as convert, sRGB_Linear, toGamut } from "colorjs.io/fn";
+import {
+    serialize,
+    to as convert,
+    sRGB_Linear,
+    toGamut,
+    get,
+} from "colorjs.io/fn";
 import {
     truncToTwoDecimalPlaces,
     fmt_convert,
@@ -17,8 +23,42 @@ const props = defineProps({
 const color_spaces = inject("ColorSpaces");
 const rgb_hex = computed(() => to_hex(props.color));
 
-const hct = computed(() => fmt_convert(props.color, color_spaces[0]));
-const rgb = computed(() => fmt_convert(props.color, color_spaces[1]));
+// const hct = computed(() => fmt_convert(props.color, color_spaces[0]));
+// const rgb = computed(() => fmt_convert(props.color, color_spaces[1]));
+
+let spaces = computed(() => {
+    let spaces = [];
+    for (let i = 0; i < color_spaces.length; i++) {
+        let space = color_spaces[i];
+        let space_name = space.name;
+
+        // Produce the string like "rgb(1,3.2,20)"
+        let func_name = space_name + "(";
+        let fmted_color = fmt_convert(props.color, space);
+        for (const coord of fmted_color) {
+            // func_name += coord.name + ","
+            func_name += coord + ",";
+        }
+        func_name = func_name.substr(0, func_name.length - 1);
+        func_name += ")";
+
+        let coords = [];
+        for (const [index, coord] of Object.entries(space.coords)) {
+            coords.push({
+                name: `${coord.name}: `,
+                value: truncToTwoDecimalPlaces(
+                    get(props.color, [space, index]),
+                ),
+            });
+        }
+
+        spaces.push({
+            func: func_name,
+            coords: coords,
+        });
+    }
+    return spaces;
+});
 </script>
 
 <template>
@@ -35,30 +75,13 @@ const rgb = computed(() => fmt_convert(props.color, color_spaces[1]));
                     <CopyableText :text="rgb_hex" />
                 </td>
             </tr>
-            <tr>
+            <tr v-for="space in spaces">
                 <td>
-                    <CopyableText
-                        :text="
-                            'rgb(' + rgb[0] + ',' + rgb[1] + ',' + rgb[2] + ')'
-                        "
-                    />
+                    <CopyableText :text="space.func" />
                 </td>
-                <td><CopyableText label="Red: " :text="rgb[0]" /></td>
-                <td><CopyableText label="Green: " :text="rgb[1]" /></td>
-                <td><CopyableText label="Blue: " :text="rgb[2]" /></td>
-            </tr>
-
-            <tr>
-                <td>
-                    <CopyableText
-                        :text="
-                            'hct(' + hct[0] + ',' + hct[1] + ',' + hct[2] + ')'
-                        "
-                    />
+                <td v-for="coord in space.coords">
+                    <CopyableText :label="coord.name" :text="coord.value" />
                 </td>
-                <td><CopyableText label="Hue: " :text="hct[0]" /></td>
-                <td><CopyableText label="Chroma: " :text="hct[1]" /></td>
-                <td><CopyableText label="Tone: " :text="hct[2]" /></td>
             </tr>
         </tbody>
     </table>
