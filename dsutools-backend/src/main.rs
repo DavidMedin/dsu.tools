@@ -223,25 +223,24 @@ async fn register_flashcard_deck(
 struct DsuToolsDB(sqlx::SqlitePool); // A struct with one field, a SqlitePool.
 
 #[derive(Deserialize, Debug)]
-struct User {
+struct NewUser {
     username: String,
     password: String,
 }
 
 #[derive(Deserialize, Debug)]
 struct SessionUser {
-    username: String,
-    token: String,
+    username: String
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Deserialize, Serialize, Debug)]
 #[serde(crate = "rocket::serde")]
 struct CreateNewFlashcardDeck {
     username: String,
     flashcard_deck: FlashcardDeck,
 }
 
-#[derive(Serialize, Debug, Deserialize)]
+#[derive(Deserialize, Serialize, Debug)]
 struct FlashcardDeck {
     name: String,
     description: String,
@@ -252,7 +251,7 @@ struct FlashcardDeck {
 #[instrument(skip(db, cookies))]
 #[post("/login", format = "application/json", data = "<user>")]
 async fn login(
-    user: Json<User>,
+    user: Json<NewUser>,
     mut db: Connection<DsuToolsDB>,
     cookies: &CookieJar<'_>,
 ) -> Status {
@@ -335,8 +334,20 @@ async fn logout(
         }
     };
 
-    // 2. Test is this user is authenticated with this session token
-    match is_token_authenticated(&mut db, user_id, &user.token).await {
+    // 2. Verify the user is logged in aka if session token under that user exists.
+    let token = match get_user_token(&mut db, user_id).await {
+        Ok(maybe) => match maybe {
+            Some(token) => token,
+            None => return Status::BadRequest,
+        },
+        Err(e) => {
+            error!("Failed to test if a session token under that user id exists: {}", e);
+            return Status::InternalServerError;
+        }
+    };
+
+    // 3. Test is this user is authenticated with this session token
+    match is_token_authenticated(&mut db, user_id, &token).await {
         Ok(false) => return Status::Unauthorized,
         Ok(true) => {}
         Err(e) => {
@@ -348,12 +359,12 @@ async fn logout(
     }
 
     // 3. Register the token from the database.
-    delete_session_token(&mut db, user_id, &user.token)
+    delete_session_token(&mut db, user_id, &token)
         .await
         .unwrap();
 
     // 4. Delete the token from the session cookie.
-    cookies.remove(("session", user.token.clone()));
+    cookies.remove(("session", token));
 
     return Status::Ok;
 }
@@ -367,7 +378,7 @@ fn bad_logout() -> Status {
 #[instrument(skip(db, cookies))]
 #[post("/register", format = "application/json", data = "<user>")]
 async fn register(
-    user: Json<User>,
+    user: Json<NewUser>,
     mut db: Connection<DsuToolsDB>,
     cookies: &CookieJar<'_>,
 ) -> Status {
@@ -447,8 +458,20 @@ async fn delete_user(
         }
     };
 
-    // 2. Test if the token is authentication.
-    match is_token_authenticated(&mut db, user_id, &user.token).await {
+    // 2. Verify the user is logged in aka if session token under that user exists.
+    let token = match get_user_token(&mut db, user_id).await {
+        Ok(maybe) => match maybe {
+            Some(token) => token,
+            None => return Status::BadRequest,
+        },
+        Err(e) => {
+            error!("Failed to test if a session token under that user id exists: {}", e);
+            return Status::InternalServerError;
+        }
+    };
+
+    // 3. Test if the token is authentication.
+    match is_token_authenticated(&mut db, user_id, &token).await {
         Ok(false) => return Status::Forbidden,
         Ok(true) => {}
         Err(e) => {
@@ -457,12 +480,13 @@ async fn delete_user(
         }
     }
 
-    // 3. If the user exists, delete the user and the session token.
+    // 4. If the user exists, delete the user and the session token.
     let query_delete = sqlx::query(
         "DELETE FROM SessionTokens WHERE username = ?; DELETE FROM Users WHERE username = ?",
     )
     .bind(&user.username)
     .bind(&user.username);
+
     let query_result = query_delete.fetch_one(&mut **db).await;
 
     if let Err(e) = query_result {
@@ -470,7 +494,7 @@ async fn delete_user(
         return Status::InternalServerError;
     }
 
-    cookies.remove(("session", user.token.clone()));
+    cookies.remove(("session", token));
     return Status::Ok;
 }
 
