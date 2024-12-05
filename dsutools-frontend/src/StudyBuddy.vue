@@ -25,7 +25,31 @@ function addFlashcardSetToSidebar(flashcardSet) {
     savedSets.appendChild(flashcardSetElement);
 }
 
+function displaySavedFlashcardSets() {
+    if (localStorage.getItem("username") == null) {
+        alert("Please log in to view your flashcard sets!");
+        return;
+    }
+    fetch(`/get-flashcard-decks?username=${localStorage.getItem("username")}`, {
+        method: "GET",
+        })
+        .then(function(response) {
+            return response.json();
+        })
+        .then(function(data) {
+            console.log(data);
+            for (let set of data) {
+                addFlashcardSetToSidebar(set);
+            }
+        })
+        .catch(function(error) {
+            console.error("Error: ", error);
+        });
+}
+
 onMounted(() => {
+    displaySavedFlashcardSets();
+
     let newFlashcardSetForm = document.getElementById("newFlashcardSetForm");
     
     newFlashcardSetForm.addEventListener("submit", (e) => {

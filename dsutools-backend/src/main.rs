@@ -8,12 +8,13 @@ use rocket::http::{CookieJar, Status};
 use rocket::serde::{json::Json, Deserialize};
 
 // Database (also Rocket)
-use rocket_db_pools::sqlx::{self, Row};
+use rocket_db_pools::sqlx::{self, query, Row};
 use rocket_db_pools::{Connection, Database};
 
 // Random Numbers
 use rand::{distributions::Alphanumeric, Rng};
 
+use serde::Serialize;
 // Logging
 use tracing::{error, instrument, trace, warn};
 // =========================================
@@ -233,13 +234,14 @@ struct SessionUser {
     token: String,
 }
 
-#[derive(Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug)]
+#[serde(crate = "rocket::serde")]
 struct CreateNewFlashcardDeck {
     username: String,
     flashcard_deck: FlashcardDeck,
 }
 
-#[derive(Deserialize, Debug)]
+#[derive(Serialize, Debug, Deserialize)]
 struct FlashcardDeck {
     name: String,
     description: String,
@@ -501,7 +503,7 @@ async fn create_flashcard_deck(
     };
 
     // Verify the user is logged in aka if session token under that user exists.
-    let token = match get_user_token(&mut db, user_id).await {
+    match get_user_token(&mut db, user_id).await {
         Ok(maybe) => match maybe {
             Some(token) => token,
             None => return Status::BadRequest,
@@ -538,6 +540,66 @@ async fn bad_create_flashcard_deck() -> Status {
     return Status::BadRequest;
 }
 
+#[instrument(skip(db, cookies))]
+#[get("/get-flashcard-decks?<username>")]
+async fn get_flashcard_decks(
+    username: &str,
+    mut db: Connection<DsuToolsDB>,
+    cookies: &CookieJar<'_>,
+) -> Result<Json<Vec<FlashcardDeck>>, Status> {
+    // Verify the user exists.
+    let user_id = match get_user_id(&mut db, &username.to_string()).await {
+        Ok(maybe) => match maybe {
+            Some(id) => id,
+            None => return Err(Status::Unauthorized),
+        },
+        Err(e) => {
+            error!("Failed to query DB for User ID from Username: {}", e);
+            return Err(Status::InternalServerError);
+        }
+    };
+
+    // Get the session token associated with the user ID.
+    match cookies.get("session") {
+        Some(cookie) => cookie.value().to_string(),
+        None => return Err(Status::Unauthorized),
+    };
+
+    // Generate a SQL query for flashcard deck names.
+    let query = sqlx::query("SELECT * FROM FlashcardDecks WHERE user_id = ?")
+    .bind(user_id);
+
+    // Perform the query to the database.
+    let query_result = query.fetch_all(&mut **db).await;
+
+    // return the flashcard decks
+    match query_result {
+        Ok(result) => {
+            let mut flashcard_decks: Vec<FlashcardDeck> = Vec::new();
+            for row in result {
+                let deck_name: String = row.get("deck_name");
+                let deck_description: String = row.get("deck_description");
+                flashcard_decks.push(FlashcardDeck {
+                    name: deck_name,
+                    description: deck_description,
+                });
+            }
+            return Ok(Json(flashcard_decks));
+        }
+        Err(e) => {
+            error!("Failed to query DB for Flashcard Decks: {}", e);
+            return Err(Status::InternalServerError);
+        }
+    }
+
+}
+
+#[instrument]
+#[get("/get-flashcard-decks", rank=2)]
+async fn bad_get_flashcard_decks() -> Status {
+    return Status::BadRequest;
+}
+
 // 'rocket::main' is another macro that tells Rocket that this is our main function.
 // While compiling, Rocket will modify this function using witchcraft.
 #[instrument]
@@ -570,7 +632,9 @@ async fn main() -> Result<(), rocket::Error> {
                 delete_user,
                 bad_delete_user,
                 create_flashcard_deck,
-                bad_create_flashcard_deck
+                bad_create_flashcard_deck,
+                get_flashcard_decks,
+                bad_get_flashcard_decks
             ],
         )
         .mount("/", FileServer::from("../dsutools-frontend/dist/"))
