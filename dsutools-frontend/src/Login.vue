@@ -72,6 +72,7 @@ onMounted(() => {
 <template>
     <Page direction="column">
         <form id="login-form" class="round-box">
+            <h1>Login</h1>
             <label for="username">Username:</label>
             <input type="text" id="username" name="username" required />
             <label for="password">Password:</label>
@@ -90,6 +91,12 @@ onMounted(() => {
     border-color: var(--color-primary);
     border-width: 0.2em;
     border-style: solid;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 30%;
+    height: 60%;
 }
 
 #login-form label {
