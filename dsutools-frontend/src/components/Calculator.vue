@@ -221,7 +221,6 @@ function Equals()
   }
 
   .number-box {
-    flex-grow: 2;
     text-align: right;
   }
 
@@ -229,6 +228,7 @@ function Equals()
     max-width: 80%;
     max-height: 100%;
     display: flex;
+    font-family: monospace;
     flex-direction: row;
     flex-wrap: wrap;
     float: left;
