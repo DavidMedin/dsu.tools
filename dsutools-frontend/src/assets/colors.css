@@ -38,6 +38,15 @@
     --color-tertiary-on-container: #005c64;
 }
 
+:root {
+  --blue: #79c9fa;
+  --pink-text: #df608f;
+  --dark-blue: #004b84;
+  --pink-background: #f974a6;
+  --light-pink-background: #ffa5c6;
+  --white: #fefefe;
+}
+
 /* semantic color variables for this project */
 :root {
     --color-background: var(--vt-c-black);

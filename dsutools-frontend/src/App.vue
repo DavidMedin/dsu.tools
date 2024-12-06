@@ -18,7 +18,10 @@ import QuickLinks from "./components/QuickLinks.vue";
                 <ToolGrid>
                     <ToolButton tool_name="Calculator" style="grid-row: 1/3" />
                     <ToolButton tool_name="Sodexo Menu" />
-                    <ToolButton tool_name="Study Buddy" />
+                    <ToolButton 
+                        tool_name="Study Buddy" 
+                        tool_link="/flashcards.html"
+                        />
                     <ToolButton tool_name="DSU Events" />
                     <ToolButton
                         tool_name="Color Calculator"

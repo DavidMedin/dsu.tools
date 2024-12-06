@@ -26,7 +26,6 @@
             <h4>Other Links</h4>
             <ul>
                 <li>
-                    <a href="irina.html">Irina's Page</a>
                 </li>
             </ul>
         </div>
