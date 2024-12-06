@@ -55,33 +55,28 @@
     --color-on-surface: #ffffff;
 }
 
-/* semantic color variables for this project */
 :root {
-    --color-background: var(--vt-c-white);
-    --color-background-soft: var(--vt-c-white-soft);
-    --color-background-mute: var(--vt-c-white-mute);
-
-    --color-border: var(--vt-c-divider-light-2);
-    --color-border-hover: var(--vt-c-divider-light-1);
-
-    --color-heading: var(--vt-c-text-light-1);
-    --color-text: var(--vt-c-text-light-1);
-
-    --section-gap: 160px;
+  --blue: #79c9fa;
+  --pink-text: #df608f;
+  --dark-blue: #004b84;
+  --pink-background: #f974a6;
+  --light-pink-background: #ffa5c6;
+  --white: #fefefe;
 }
 
-@media (prefers-color-scheme: dark) {
-    :root {
-        --color-background: var(--vt-c-black);
-        --color-background-soft: var(--vt-c-black-soft);
-        --color-background-mute: var(--vt-c-black-mute);
+/* semantic color variables for this project */
+:root {
+    --color-background: var(--vt-c-black);
+    --color-background-soft: var(--vt-c-black-soft);
+    --color-background-mute: var(--vt-c-black-mute);
 
-        --color-border: var(--vt-c-divider-dark-2);
-        --color-border-hover: var(--vt-c-divider-dark-1);
+    --color-border: var(--vt-c-divider-dark-2);
+    --color-border-hover: var(--vt-c-divider-dark-1);
 
-        --color-heading: var(--vt-c-text-dark-1);
-        --color-text: var(--vt-c-text-dark-2);
-    }
+    --color-heading: var(--vt-c-text-dark-1);
+    --color-text: var(--vt-c-text-dark-2);
+
+    --section-gap: 160px;
 }
 
 *,
@@ -105,4 +100,28 @@ body {
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+}
+
+h2{
+    color: var(--color-primary);
+    margin-top: 1rem;
+    margin-bottom: 1rem;
+    font-weight: bold;
+}
+
+h3{
+    color: var(--vt-c-text-dark-2);
+}
+
+h6{
+    text-align: center;
+}
+
+select{
+    margin-top: .5rem;
+    margin-bottom: .5rem;
+    width: 14rem;
+    background-color: var(--color-secondary);
+    border: none;
+    border-radius: 1em;
 }
