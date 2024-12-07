@@ -176,26 +176,26 @@ function Equals()
 <template>
     <p class="number-box"> {{ curNumber }} </p>
   <!-- OPERATION BUTTONS -->
-    <div class="parent-flex">
+  <div class="basic-ops">
+        <button class="basic-operation" @click="Operation(Operator.ADD)"> + </button>
+        <button class="basic-operation" @click="Operation(Operator.SUB)"> - </button>
+        <button class="basic-operation" @click="Operation(Operator.MUL)"> * </button>
+        <button class="basic-operation" @click="Operation(Operator.DIV)"> / </button>
+        <button class="basic-operation" @click="Equals()"> = </button>
+      </div>
+    <div class="number-pad">
       <button class="child-flex" @click="Append(Math.PI)"> π </button>
       <button class="child-flex" @click="Append(Math.E)"> e </button>
       <button class="child-flex" @click="Clear()"> CLR </button>
       <button class="child-flex" @click="ClearMem()"> CLM </button>
       <button class="child-flex" @click="Delete()"> DEL </button>
-      <button class="child-flex" @click="Operation(Operator.ADD)"> + </button>
-      <button class="child-flex" @click="Operation(Operator.SUB)"> - </button>
-      <button class="child-flex" @click="Operation(Operator.MUL)"> * </button>
-      <button class="child-flex" @click="Operation(Operator.DIV)"> / </button>
       <button class="child-flex" @click="Operation(Operator.EXP)"> x<sup>y</sup> </button>
       <button class="child-flex" @click="Operation(Operator.LOG)"> log<sub>10</sub>x </button>
       <button class="child-flex" @click="Operation(Operator.LN)"> ln </button>
       <button class="child-flex" @click="Operation(Operator.LGB)"> log<sub>y</sub>x </button>
       <button class="child-flex" @click="Operation(Operator.REC)"> <sup>1</sup>&frasl;<sub>x</sub> </button>
       <button class="child-flex" @click="Operation(Operator.ABS)"> |x| </button>
-      <button class="child-flex" @click="Equals()"> = </button>
-    </div>
   <!-- NUMBER BUTTONS -->
-    <div class="number-pad">
       <button class="number-button" @click="Append('1')"> 1 </button>
       <button class="number-button" @click="Append('2')"> 2 </button>
       <button class="number-button" @click="Append('3')"> 3 </button>
@@ -213,20 +213,15 @@ function Equals()
 
 <style>
 
-  .calculator-bar {
-    max-width: 150px;
-    max-height: 40px;
-    background-color: whitesmoke;
-    text-decoration-color: black;
-  }
-
   .number-box {
     text-align: right;
+    width: 100%;
+    height: 15%;
   }
 
   .number-pad {
-    max-width: 80%;
-    max-height: 100%;
+    width: 80%;
+    height: 75%;
     display: flex;
     font-family: monospace;
     flex-direction: row;
@@ -237,6 +232,19 @@ function Equals()
     width: 33%;
     font-size: large;
     text-align: center;
+  }
+
+  .basic-ops {
+    float: right;
+    display: flex;
+    flex-wrap: wrap;
+    width: 20%;
+    height: 75%;
+  }
+
+  .basic-operation {
+    width: 100%;
+    height: 20%;
   }
 
   .parent-flex {

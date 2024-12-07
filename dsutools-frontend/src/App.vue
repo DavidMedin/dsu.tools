@@ -17,7 +17,7 @@ import Calculator from "./components/Calculator.vue";
             </nav>
             <div>
                 <ToolGrid>
-                    <ToolItem tool_name="Calculator" style="grid-row: 1/3"> 
+                    <ToolItem tool_name="Calculator"> 
                         <Calculator/>
                     </ToolItem>
                     <ToolButton tool_name="Sodexo Menu" />
