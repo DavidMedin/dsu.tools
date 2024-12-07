@@ -15,6 +15,7 @@ const Operator = Object.freeze({ //used to store which operator is currently hap
   LOG: 'l10',
   LN: 'ln',
   LGB: 'xlogy',
+  SQRT: 'sqrt',
   ABS: '|',
   REC: '1/x',
   NEG: '+/-'
@@ -24,6 +25,7 @@ var curOp = Operator.NONE
 var cacheOp = Operator.NONE
 var clearText = false
 var numberPressed = false
+const decimalPlaces = 5;
 
 function Append(input)
 {
@@ -103,6 +105,11 @@ function Operation(input)
   {
     curNumber.value = 1 / curNumber.value
   }
+  else if (input === Operator.SQRT)
+  {
+    curNumber.value = Math.sqrt(curNumber.value)
+    curNumber.value = curNumber.value.toFixed(decimalPlaces);
+  }
   else if(curOp !== Operator.NONE && numberPressed )
   {
     Equals()
@@ -166,8 +173,7 @@ function Equals()
     cacheNum.value = numB
   cacheOp = curOp
   curOp = Operator.DONE
-  console.log('curOP: ', curOp)
-  curNumber.value = calculation
+  curNumber.value = calculation.toFixed(decimalPlaces)
   clearText = true;
 }
 
@@ -181,7 +187,7 @@ function Equals()
         <button class="basic-operation" @click="Operation(Operator.SUB)"> - </button>
         <button class="basic-operation" @click="Operation(Operator.MUL)"> * </button>
         <button class="basic-operation" @click="Operation(Operator.DIV)"> / </button>
-        <button class="basic-operation" @click="Equals()"> = </button>
+        <button class="basic-operation equals" @click="Equals()"> = </button>
       </div>
     <div class="number-pad">
       <button class="child-flex" @click="Append(Math.PI)"> π </button>
@@ -195,7 +201,10 @@ function Equals()
       <button class="child-flex" @click="Operation(Operator.LGB)"> log<sub>y</sub>x </button>
       <button class="child-flex" @click="Operation(Operator.REC)"> <sup>1</sup>&frasl;<sub>x</sub> </button>
       <button class="child-flex" @click="Operation(Operator.ABS)"> |x| </button>
+      <button class="child-flex" @click="Operation(Operator.SQRT)"> &Sqrt;x </button>
+    </div>
   <!-- NUMBER BUTTONS -->
+   <div class="number-pad">
       <button class="number-button" @click="Append('1')"> 1 </button>
       <button class="number-button" @click="Append('2')"> 2 </button>
       <button class="number-button" @click="Append('3')"> 3 </button>
@@ -221,7 +230,7 @@ function Equals()
 
   .number-pad {
     width: 80%;
-    height: 75%;
+    height: 37.5%;
     display: flex;
     font-family: monospace;
     flex-direction: row;
@@ -230,6 +239,7 @@ function Equals()
 
   .number-button {
     width: 33%;
+    height: 25%;
     font-size: large;
     text-align: center;
   }
@@ -255,7 +265,15 @@ function Equals()
 
   .child-flex {
     background-color: grey;
-    width: 25%;
+    margin: 0%;
+    padding: 0%;
+
+    min-width: 33%;
+    width: auto;
+    max-width: 50%;
+    
+    height: auto;
+    max-height: 33%;
     text-align: center;
   }
 
