@@ -17,6 +17,7 @@ export default defineConfig({
       input: {
         main: resolve(__dirname, "index.html"),
         irina: resolve(__dirname, "flashcards.html"),
+        colors: resolve(__dirname, "colors.html"),
         login: resolve(__dirname, "login.html"),
         register: resolve(__dirname, "register.html"),
       },

@@ -31,12 +31,12 @@ const props = defineProps({
     },
 });
 let color = defineModel("color");
-const max_value = computed(() => {
+const color_var_range = computed(() => {
     let coord = props.color_space.coords[props.coord_name];
     if (coord.range == null) {
-        return coord.refRange[1];
+        return coord.refRange;
     } else {
-        return coord.range[1];
+        return coord.range;
     }
 });
 // Only used for the Handle's background color.
@@ -58,13 +58,17 @@ let slider_transform_style = ref({
 let pressed = false;
 
 function handlePosXToVariable(x) {
-    return truncToTwoDecimalPlaces((x / slider_width_px) * max_value.value);
+    return truncToTwoDecimalPlaces(
+        (x / slider_width_px) *
+            (color_var_range.value[1] - color_var_range.value[0]) +
+            color_var_range.value[0],
+    );
 }
 function colorToHandlePosX(color_in) {
     return (
         (get(color_in, [props.color_space, props.coord_name]) *
             slider_width_px) /
-        max_value.value
+        color_var_range.value[1]
     );
 }
 
@@ -114,6 +118,9 @@ function moveHandle(x, old_x) {
 
 function render() {
     // render the hue color slider
+    if (canvas_el.value == null) {
+        return;
+    }
     if (canvas_el.value.getContext) {
         const ctx = canvas_el.value.getContext("2d");
 
