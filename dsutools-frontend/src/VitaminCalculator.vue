@@ -8,19 +8,71 @@ const symptom = ref("Any Symptom");
 
 //stores all vitamin symptoms
 const vitamins = ref([
-    {vitamin: "A", High: ["happy", "anxious"], Low: ["tired", "anxious"], Link: "https://ods.od.nih.gov/factsheets/VitaminA-Consumer/#:~:text=professional%20fact%20sheet.-,What%20are%20vitamin%20A%20and%20carotenoids%20and%20what%20do%20they,and%20other%20organs%20work%20properly"},
-    {vitamin: "C", High: ["tired", "anxious"], Low: ["tired", "anxious"], Link: "https://ods.od.nih.gov/factsheets/VitaminC-HealthProfessional/"},
-    {vitamin: "D", High: ["tired", "anxious"], Low: ["tired", "anxious"], Link: "https://ods.od.nih.gov/factsheets/VitaminD-Consumer/"},
-    {vitamin: "E", High: ["tired", "anxious"], Low: ["tired", "anxious"], Link: "https://ods.od.nih.gov/factsheets/VitaminE-Consumer/"},
-    {vitamin: "K", High: ["tired", "anxious"], Low: ["tired", "anxious"], Link: "https://ods.od.nih.gov/factsheets/VitaminK-Consumer/"},
-    {vitamin: "B-Thiamine", High: ["tired", "anxious"], Low: ["tired", "anxious"], Link: "https://ods.od.nih.gov/factsheets/Thiamin-Consumer/"},
-    {vitamin: "B-Riboflavin", High: ["tired", "anxious"], Low: ["tired", "anxious"], Link: "https://ods.od.nih.gov/factsheets/Riboflavin-Consumer/"},
-    {vitamin: "B-Niacin", High: ["tired", "anxious"], Low: ["tired", "anxious"], Link: "https://ods.od.nih.gov/factsheets/Niacin-Consumer/"},
-    {vitamin: "B-Pantothenic Acid", High: ["tired", "anxious"], Low: ["tired", "anxious"], Link: "https://ods.od.nih.gov/factsheets/PantothenicAcid-Consumer/"},
-    {vitamin: "B-Biotin", High: ["tired", "anxious"], Low: ["tired", "anxious"], Link: "https://ods.od.nih.gov/factsheets/Biotin-Consumer/"},
-    {vitamin: "B6", High: ["tired", "anxious"], Low: ["tired", "anxious"], Link: "https://ods.od.nih.gov/factsheets/VitaminB6-Consumer/"},
-    {vitamin: "B12", High: ["tired", "anxious"], Low: ["tired", "anxious"], Link: "https://ods.od.nih.gov/factsheets/VitaminB12-Consumer/"},
-    {vitamin: "B-Folate", High: ["tired", "anxious"], Low: ["tired", "anxious"], Link: "https://ods.od.nih.gov/factsheets/Folate-Consumer/"}
+    
+    {vitamin: "A", 
+    High: ["Headaches", "Blurred vision", "Nausea", "Dizziness", "Muscle Aches", "Loss of coordination"], 
+    Low: ["Vision Problems", "Respitory Diseases", "Anemia"], 
+    Link: "https://ods.od.nih.gov/factsheets/VitaminA-Consumer/#:~:text=professional%20fact%20sheet.-,What%20are%20vitamin%20A%20and%20carotenoids%20and%20what%20do%20they,and%20other%20organs%20work%20properly"},
+    
+    {vitamin: "C", 
+    High: ["Diarrhea", "Nausea", "Stomach Pain"], 
+    Low: ["Fatigue", "Malaise", "Gum Diseases", "Petechiae", "Bruises", "Purpura", "Joint Pain", "Blood Clotting Reduction", "Hyperkeratosis","Corkscrew Hairs", "Anemia"], 
+    Link: "https://ods.od.nih.gov/factsheets/VitaminC-HealthProfessional/"},
+    
+    {vitamin: "D", 
+    High: ["Nausea", "Vomiting", "Muscle Weakness", "Confusion", "General Pain", "Loss of Appetite", "Dehydration", "Excessive Urination", "Thirst", "Kidney Stones"], 
+    Low: ["Bone Weakness", "Bone Deformity", "Depression",], 
+    Link: "https://ods.od.nih.gov/factsheets/VitaminD-Consumer/"},
+    
+    {vitamin: "E", 
+    High: ["Blood Clotting Reduction"], 
+    Low: ["Limb Numbness", "Loss of Cordination", "Muscle Weakness", "Weak Immune System"], 
+    Link: "https://ods.od.nih.gov/factsheets/VitaminE-Consumer/"},
+    
+    {vitamin: "K", 
+    High: [], 
+    Low: ["Blood Clotting Reduction", "Bruises", "Bone Weakness"], 
+    Link: "https://ods.od.nih.gov/factsheets/VitaminK-Consumer/"},
+    
+    {vitamin: "B-Thiamine", 
+    High: [], 
+    Low: ["Weight Loss", "Loss of Appetite", "Memory Loss", "Muscle Weakness", "Heart Problems"], 
+    Link: "https://ods.od.nih.gov/factsheets/Thiamin-Consumer/"},
+    
+    {vitamin: "B-Riboflavin", 
+    High: [], 
+    Low: ["Mouth Problems", "Hair Loss", "Sore Throat"], 
+    Link: "https://ods.od.nih.gov/factsheets/Riboflavin-Consumer/"},
+    
+    {vitamin: "B-Niacin", 
+    High: ["Skin Problems", "Headahces", "Rashes", "Dizziness"], 
+    Low: ["Skin Problems", "Bright Red Tongue", "Vomiting", "Constipation", "Diarrhea", "Depression", "Headaches", "Fatigue", "Aggression", "Paranoia", "Suicidal", "Hallucinations", "Apathy", "Memory Loss"], 
+    Link: "https://ods.od.nih.gov/factsheets/Niacin-Consumer/"},
+    
+    {vitamin: "B-Pantothenic Acid", 
+    High: ["Stomach Problems", "Diarrhea"], 
+    Low: ["Headaches", "Fatigue", "Irritability", "Restlessness", "Sleeping Problems", "Stomach Problems", "Heartburn", "Diarrhea", "Nausea", "Vomiting", "Loss of Appetite"], 
+    Link: "https://ods.od.nih.gov/factsheets/PantothenicAcid-Consumer/"},
+    
+    {vitamin: "B-Biotin", 
+    High: [], 
+    Low: ["Thinning Hair", "Rashes", "Pinkeye", "Seizures", "Skin Infections", "Brittle Nails"], 
+    Link: "https://ods.od.nih.gov/factsheets/Biotin-Consumer/"},
+    
+    {vitamin: "B6", 
+    High: ["Nerve Damage", "Rashes", "Nausea", "Sun Sensitivity", "Heartburn"], 
+    Low: ["Anemia", "Rashes", "Swollen Tongue", "Depression", "Confusion", "Weak Immune System"], 
+    Link: "https://ods.od.nih.gov/factsheets/VitaminB6-Consumer/"},
+    
+    {vitamin: "B12", 
+    High: [], 
+    Low: ["Fatigue", "Weakness", "Heart Problems", "Loss of Appetite", "Weight Loss", "Infertility", "Nerve Problems", "Loss of Cordination", "Depression", "Confusion", "Dementia", "Memory Loss", "Mouth Problems"], 
+    Link: "https://ods.od.nih.gov/factsheets/VitaminB12-Consumer/"},
+    
+    {vitamin: "B-Folate", 
+    High: ["Hide Anemia"], 
+    Low: ["Anemia", "Weakness", "Fatigue", "Concentration Problems", "Irritability", "Headaches", "Heart Problems", "Shortness Of Breath", "Mouth Problems"], 
+    Link: "https://ods.od.nih.gov/factsheets/Folate-Consumer/"}
 ])
 
 
