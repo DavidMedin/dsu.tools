@@ -9,6 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "big.js": "^6.2.2",
     "mathjs": "^14.0.0",
     "vue": "^3.4.29"
   },

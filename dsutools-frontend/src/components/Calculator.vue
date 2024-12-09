@@ -1,9 +1,9 @@
 <script setup>
 import { ref, reactive } from 'vue'
+import { Big } from 'big.js'
 //import { useMath } from '@vueuse/math'
 
-const curNumber = ref('0') //what is currently being typed
-const cacheNum = ref('') //used if an operator has been selected to store prev curNumber
+const curNumber = ref('0') //what is currently being typed //used if an operator has been selected to store prev curNumber
 const Operator = Object.freeze({ //used to store which operator is currently happening (enum)
   NONE: 'n/a',
   DONE: '=',
@@ -26,6 +26,8 @@ var cacheOp = Operator.NONE
 var clearText = false
 var numberPressed = false
 const decimalPlaces = 5;
+var realValue = new Big(0);
+var cacheNum = new Big(0);
 
 function Append(input)
 {
@@ -44,21 +46,30 @@ function Append(input)
   console.log(input)
   if(curNumber.value === '0' && input != '.')
   {
+    realValue = input;
     curNumber.value = input
     piOrEPressed = false
   }
   else if (input === Math.PI || input === Math.E)
   {
+    realValue = input;
     curNumber.value = input
   }
   else
   {
     //prevents numbers from appending to pi/e
     if(curNumber.value === Math.PI || curNumber.value === Math.E)
+    {
+      realValue = input
       curNumber.value = input
+    }
     else
+    {
+      realValue += input
       curNumber.value += input
+    }
   }
+  curNumber.value = realValue.toFixed(decimalPlaces)
 
   numberPressed = true
 }
@@ -87,28 +98,33 @@ function Operation(input)
   //so they need to be checked before doing the equals
   if(input === Operator.LOG)
   {
-    curNumber.value = Math.log10(curNumber.value)
+    realValue = Math.log10(realValue)
+    curNumber.value = realValue.toFixed(decimalPlaces);
   }
   else if(input === Operator.LN)
   {
-    curNumber.value = Math.log(curNumber.value)
+    realValue = Math.log(realValue)
+    curNumber.value = realValue.toFixed(decimalPlaces);
   }
   else if (input === Operator.ABS && curNumber.value < 0)
   {
-    curNumber.value *= -1
+    realValue *= -1
+    curNumber.value = realValue
   }
   else if (input === Operator.NEG)
   {
-    curNumber.value = curNumber.value * -1  
+    realValue *= -1
+    curNumber.value = realValue
   }
   else if (input === Operator.REC)
   {
-    curNumber.value = 1 / curNumber.value
+    realValue = 1 / realValue
+    curNumber.value = realValue
   }
   else if (input === Operator.SQRT)
   {
-    curNumber.value = Math.sqrt(curNumber.value)
-    curNumber.value = curNumber.value.toFixed(decimalPlaces);
+    realValue = Math.sqrt(curNumber.value)
+    curNumber.value = realValue.toFixed(decimalPlaces);
   }
   else if(curOp !== Operator.NONE && numberPressed )
   {
@@ -116,16 +132,15 @@ function Operation(input)
   }
   cacheOp = curOp
   curOp = input
-  cacheNum.value = curNumber.value
+  cacheNum = realValue;
   clearText = true;
   numberPressed = false
 }
 
 function Equals()
 {
-  var numA = parseFloat(cacheNum.value)
-  var numB = parseFloat(curNumber.value)
-  var calculation = 0
+  var numA = cacheNum
+  var numB = new Big(curNumber.value)
   var doCacheNum = true
 
   //check to see if equals is getting pressed over and over
@@ -146,34 +161,37 @@ function Equals()
   }
   else if(curOp === Operator.ADD)
   {
-    calculation = numA + numB
+    realValue = numA + numB
   }
   else if(curOp === Operator.SUB)
   {
-    calculation = numA - numB
+    realValue = numA - numB
   }
   else if(curOp === Operator.MUL)
   {
-    calculation = numA * numB
+    realValue = numA * numB
   }
   else if(curOp === Operator.DIV)
   {
-    calculation = numA / numB
+    realValue = numA / numB
   }
   else if(curOp === Operator.EXP)
   {
-    calculation = numA ** numB
+    realValue = numA ** numB
   }
   else if(curOp === Operator.LGB)
   {
-    calculation = Math.log(numA) / Math.log(numB)
+    realValue = Math.log(numA) / Math.log(numB)
   }
 
   if(doCacheNum)
-    cacheNum.value = numB
+    cacheNum = numB
   cacheOp = curOp
   curOp = Operator.DONE
-  curNumber.value = calculation.toFixed(decimalPlaces)
+  if(Math.ceil(realValue) > realValue)
+    curNumber.value = realValue.toFixed(decimalPlaces)
+  else
+    curNumber.value = realValue
   clearText = true;
 }
 
