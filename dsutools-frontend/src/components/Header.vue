@@ -1,71 +1,39 @@
 <script setup>
-import { onMounted } from "vue";
+import { ref } from "vue";
 
-// Call the function on page load to set initial state
-onMounted(() => {
-    const loggedIn = localStorage.getItem('loggedIn') === 'true'; // Check stored value as string
-  
-    // Ensure the elements exist before trying to access them
-    const loginButton = document.getElementById("login-button");
-    const logoutButton = document.getElementById("logout-button");
-  
-    if (loginButton && logoutButton) {
-      if (loggedIn) {
-        loginButton.style.display = "none";
-        logoutButton.style.display = "block";
-      } else {
-        loginButton.style.display = "block";
-        logoutButton.style.display = "none";
-      }
-  }
-},
-);
+let loggedIn = ref(localStorage.getItem("loggedIn") === "true");
+let username = localStorage.getItem("username");
 
 function logout() {
-    const loggedIn = localStorage.getItem('loggedIn') === 'true'; // Check stored value as string
-    const username = localStorage.getItem('username');
+    const username = localStorage.getItem("username");
 
-    if (loggedIn === null) {
+    if (loggedIn.value === null) {
         alert("You are not logged in!");
         return;
     }
 
-    if (loggedIn && username != null) {
+    if (loggedIn.value && username != null) {
         fetch("/logout", {
             method: "POST",
-            body: JSON.stringify({username: username}),
+            body: JSON.stringify({ username: username }),
             headers: {
                 "Content-Type": "application/json",
             },
-        })
-        .then((response) => {
+        }).then((response) => {
             if (!response.ok) {
                 alert("Error logging out");
                 throw new Error("Not ok");
-            }
-            else{
+            } else {
                 // Ensure the elements exist before trying to access them
-                const loginButton = document.getElementById("login-button");
-                const logoutButton = document.getElementById("logout-button");
-              
-                if (loginButton && logoutButton) {
-                  if (loggedIn) {
-                    loginButton.style.display = "block";
-                    logoutButton.style.display = "none";
-                    localStorage.setItem('loggedIn', 'false');
-                    localStorage.removeItem('username');
-                    window.location.replace('/');
-                  } else {
-                    loginButton.style.display = "none";
-                    logoutButton.style.display = "block";
-                  }
-              }
+                if (loggedIn) {
+                    localStorage.setItem("loggedIn", "false");
+                    localStorage.removeItem("username");
+                    window.location.replace("/");
+                }
             }
-        })
+        });
     }
-  
 }
-
 </script>
 
 <template>
@@ -74,8 +42,23 @@ function logout() {
             <h1 class="dsu-blue" onclick="location.href = '/'">DSU.</h1>
             <h1 class="dsu-blue" onclick="location.href = '/'">TOOLS</h1>
         </div>
-        <button id="login-button" onclick="location.href = '/login.html'">Login</button>
-        <button id="logout-button" @click="logout()" style="display: none;">Logout</button>
+        <div v-if="loggedIn">
+            <span>{{ username }}</span>
+            <button id="logout-button" @click="logout()">Logout</button>
+        </div>
+        <template v-else>
+            <div>
+                <button onclick="location.href = '/register.html'">
+                    Register
+                </button>
+                <button
+                    id="login-button"
+                    onclick="location.href = '/login.html'"
+                >
+                    Login
+                </button>
+            </div>
+        </template>
     </header>
 </template>
 
@@ -85,10 +68,6 @@ function logout() {
     padding: 1rem;
     align-items: center;
     user-select: none;
-}
-
-#logout-button {
-    display: none;
 }
 
 header {
