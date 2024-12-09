@@ -25,9 +25,10 @@ var curOp = Operator.NONE
 var cacheOp = Operator.NONE
 var clearText = false
 var numberPressed = false
+var piOrEPressed = false
 const decimalPlaces = 5;
-var realValue = new Big(0);
-var cacheNum = new Big(0);
+var realValue = new Big('0');
+var cacheNum = new Big('0');
 
 function Append(input)
 {
@@ -46,14 +47,15 @@ function Append(input)
   console.log(input)
   if(curNumber.value === '0' && input != '.')
   {
-    realValue = input;
+    realValue = input
     curNumber.value = input
     piOrEPressed = false
   }
   else if (input === Math.PI || input === Math.E)
   {
-    realValue = input;
+    realValue = input
     curNumber.value = input
+    piOrEPressed = true
   }
   else
   {
@@ -69,8 +71,11 @@ function Append(input)
       curNumber.value += input
     }
   }
-  curNumber.value = realValue.toFixed(decimalPlaces)
-
+  if(Math.log10(realValue) > decimalPlaces)
+  {
+    curNumber.value = (Number(realValue)).toPrecision(decimalPlaces)
+  }
+    
   numberPressed = true
 }
 
@@ -208,11 +213,11 @@ function Equals()
         <button class="basic-operation equals" @click="Equals()"> = </button>
       </div>
     <div class="number-pad">
-      <button class="child-flex" @click="Append(Math.PI)"> π </button>
-      <button class="child-flex" @click="Append(Math.E)"> e </button>
       <button class="child-flex" @click="Clear()"> CLR </button>
       <button class="child-flex" @click="ClearMem()"> CLM </button>
       <button class="child-flex" @click="Delete()"> DEL </button>
+      <button class="child-flex" @click="Append(Math.PI)"> π </button>
+      <button class="child-flex" @click="Append(Math.E)"> e </button>
       <button class="child-flex" @click="Operation(Operator.EXP)"> x<sup>y</sup> </button>
       <button class="child-flex" @click="Operation(Operator.LOG)"> log<sub>10</sub>x </button>
       <button class="child-flex" @click="Operation(Operator.LN)"> ln </button>
@@ -242,6 +247,8 @@ function Equals()
 
   .number-box {
     text-align: right;
+    font-size: clamp(0.3em, 2vw, 1em);
+    overflow-wrap: break-word;
     width: 100%;
     height: 15%;
   }
