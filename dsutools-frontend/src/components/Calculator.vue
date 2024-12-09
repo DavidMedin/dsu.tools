@@ -267,19 +267,26 @@ function Equals()
     height: 25%;
     font-size: large;
     text-align: center;
+    padding: 0%;
+    margin: 0%;
   }
 
   .basic-ops {
     float: right;
     display: flex;
     flex-wrap: wrap;
+    text-align: center;
     width: 20%;
-    height: 75%;
+    height: 75%;    
+    padding: 0%;
+    margin: 0%;
   }
 
   .basic-operation {
     width: 100%;
-    height: 20%;
+    height: 20%;   
+    padding: 0%;
+    margin: 0%;
   }
 
   .parent-flex {
