@@ -19,13 +19,8 @@
                 <li>
                     <a href="https://syscalls.gael.in/">x86_64 Syscalls</a>
                 </li>
-            </ul>
-        </div>
-
-        <div>
-            <h4>Other Links</h4>
-            <ul>
                 <li>
+                    <a href="https://www.infinitecampus.com/audience/parents-students/login-search">Infinite Campus Log-In</a>
                 </li>
             </ul>
         </div>

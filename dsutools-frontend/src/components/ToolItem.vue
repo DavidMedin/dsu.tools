@@ -19,9 +19,18 @@ defineProps({
 .round-box {
     width: 100%;
     height: 100%;
+    border-color: var(--color-primary);
+    border-width: 0.2em;
+    border-style: solid;    
+    text-decoration: none;
+    font-size: 1.5rem;
 }
 
 #title {
     text-align: center;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: white;
 }
+
 </style>

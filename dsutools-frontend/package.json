@@ -9,13 +9,14 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@material/material-color-utilities": "^0.3.0",
+    "big.js": "^6.2.2",
+    "mathjs": "^14.0.0",
     "@tabler/icons-vue": "^3.19.0",
     "colorjs.io": "^0.5.2",
     "vue": "^3.4.29"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^5.0.5",
-    "vite": "^5.3.1"
+    "vite": "^5.4.9"
   }
 }
