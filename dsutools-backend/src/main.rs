@@ -14,6 +14,12 @@ use rocket_db_pools::{Connection, Database};
 // Random Numbers
 use rand::{distributions::Alphanumeric, Rng};
 
+// Password Hashing : "don't roll your own"
+use argon2::{
+    password_hash::{rand_core::OsRng, PasswordHash, PasswordHasher, PasswordVerifier, SaltString},
+    Argon2,
+};
+
 use serde::Serialize;
 // Logging
 use tracing::{error, instrument, trace, warn};
@@ -36,6 +42,35 @@ fn new_session_token() -> String {
     // `token:? = s` says "make a key named 'token' and its value is from the variable 's'. ':?' says use the debug formatter for 'token'."
     trace!(token = s, "Generated new Session Token");
     return s;
+}
+
+// Verify if an password matches an Argon2 password hash. Our database contains Argon2 hashes.
+#[instrument]
+fn verify_password(
+    password: &String,
+    db_password_hash: &String,
+) -> Result<(), argon2::password_hash::Error> {
+    let parsed_hash = PasswordHash::new(db_password_hash)?;
+    let result = Argon2::default().verify_password(password.as_bytes(), &parsed_hash);
+    trace!(
+        hash_result = ?result,
+        "Checked if password matches password hash."
+    );
+    return result;
+}
+
+#[instrument]
+fn hash_password(password: &String) -> Result<String, argon2::password_hash::Error> {
+    let salt = SaltString::generate(&mut OsRng);
+
+    // Argon2 with default params (Argon2id v19)
+    let argon2 = Argon2::default();
+
+    // Hash password to PHC string ($argon2id$v=19$...)
+    let password_hash = argon2
+        .hash_password(password.as_bytes(), &salt)?
+        .to_string();
+    return Ok(password_hash);
 }
 
 #[instrument(skip(db))]
@@ -103,8 +138,7 @@ async fn get_user_token(
     user_id: i64,
 ) -> Result<Option<String>, sqlx::Error> {
     // Generate s SQL query
-    let query = sqlx::query("SELECT * FROM SessionTokens WHERE user_id = ?")
-    .bind(user_id);
+    let query = sqlx::query("SELECT * FROM SessionTokens WHERE user_id = ?").bind(user_id);
 
     // Send the query to the database.
     let query_result = query.fetch_one(&mut ***db).await;
@@ -174,8 +208,8 @@ async fn get_flashcard_deck_id(
 ) -> Result<Option<i64>, sqlx::Error> {
     // Generate a SQL query.
     let query = sqlx::query("SELECT * FROM FlashcardDecks WHERE deck_name = ? AND user_id = ?")
-    .bind(flashcard_deck_name)
-    .bind(user_id);
+        .bind(flashcard_deck_name)
+        .bind(user_id);
 
     // Perform the query to the database.
     let query_result = query.fetch_one(&mut ***db).await;
@@ -191,7 +225,10 @@ async fn get_flashcard_deck_id(
                 return Ok(None);
             } else {
                 // Something else is wrong!
-                error!("Failed to get query DB for Flashcard ID with Flashcard Deck Name : {}", e);
+                error!(
+                    "Failed to get query DB for Flashcard ID with Flashcard Deck Name : {}",
+                    e
+                );
                 return Err(e);
             }
         }
@@ -206,7 +243,9 @@ async fn register_flashcard_deck(
     deck_description: &String,
 ) -> Result<(), sqlx::Error> {
     // Generate a SQL query
-    let query = sqlx::query("INSERT INTO FlashcardDecks (user_id, deck_name, deck_description) VALUES (?, ?, ?)")
+    let query = sqlx::query(
+        "INSERT INTO FlashcardDecks (user_id, deck_name, deck_description) VALUES (?, ?, ?)",
+    )
     .bind(user_id)
     .bind(deck_name)
     .bind(deck_description);
@@ -230,7 +269,7 @@ struct NewUser {
 
 #[derive(Deserialize, Debug)]
 struct SessionUser {
-    username: String
+    username: String,
 }
 
 #[derive(Deserialize, Serialize, Debug)]
@@ -259,9 +298,7 @@ async fn login(
 
     // 1. Test to see if this user exists and has this password.
     // Generate a SQL query
-    let query = sqlx::query("SELECT * FROM users WHERE username = ? AND password_hash = ?")
-        .bind(&user.username)
-        .bind(&user.password);
+    let query = sqlx::query("SELECT * FROM users WHERE username = ?").bind(&user.username);
 
     // Perform the query to the database.
     let query_result = query.fetch_one(&mut **db).await; // Asyncronous Rust keyword. This function will wait for the database to respond.
@@ -275,6 +312,14 @@ async fn login(
         }
     };
 
+    // 1.2. Test if the password given matches the password hash in the database.
+    if let Err(e) = verify_password(&user.password, &user_row.get("password_hash")) {
+        if e == argon2::password_hash::Error::Password {
+            return Status::Unauthorized;
+        }
+        return Status::InternalServerError;
+    }
+
     // 2. Get the user's ID from the result.
     let user_id: i64 = user_row.get("id");
 
@@ -286,7 +331,10 @@ async fn login(
         }
         Ok(None) => {}
         Err(e) => {
-            error!("Failed to test if a session token under that user id exists: {}", e);
+            error!(
+                "Failed to test if a session token under that user id exists: {}",
+                e
+            );
             return Status::InternalServerError;
         }
     }
@@ -354,7 +402,10 @@ async fn logout(
             None => return Status::BadRequest,
         },
         Err(e) => {
-            error!("Failed to test if a session token under that user id exists: {}", e);
+            error!(
+                "Failed to test if a session token under that user id exists: {}",
+                e
+            );
             return Status::InternalServerError;
         }
     };
@@ -408,9 +459,19 @@ async fn register(
     }
 
     // 2. If the user doesn't exist, create a new user.
+
+    //2.1. Create a hash of the password
+    let password_hash: String = match hash_password(&user.password) {
+        Ok(hash) => hash,
+        Err(_) => {
+            return Status::InternalServerError;
+        }
+    };
+
+    //2.2. Insert the user into the database.
     let query = sqlx::query("INSERT INTO Users (username, password_hash) VALUES (?, ?)")
         .bind(&user.username)
-        .bind(&user.password);
+        .bind(&password_hash);
     let query_result = query.execute(&mut **db).await;
     let user_id = match query_result {
         Ok(row) => row.last_insert_rowid(),
@@ -478,7 +539,10 @@ async fn delete_user(
             None => return Status::BadRequest,
         },
         Err(e) => {
-            error!("Failed to test if a session token under that user id exists: {}", e);
+            error!(
+                "Failed to test if a session token under that user id exists: {}",
+                e
+            );
             return Status::InternalServerError;
         }
     };
@@ -518,7 +582,11 @@ fn bad_delete_user() -> Status {
 }
 
 #[instrument(skip(db))]
-#[post("/create-flashcard-deck", format="application/json", data="<flashcard_deck_request>")]
+#[post(
+    "/create-flashcard-deck",
+    format = "application/json",
+    data = "<flashcard_deck_request>"
+)]
 async fn create_flashcard_deck(
     flashcard_deck_request: Json<CreateNewFlashcardDeck>,
     mut db: Connection<DsuToolsDB>,
@@ -546,7 +614,10 @@ async fn create_flashcard_deck(
             None => return Status::BadRequest,
         },
         Err(e) => {
-            error!("Failed to test if a session token under that user id exists: {}", e);
+            error!(
+                "Failed to test if a session token under that user id exists: {}",
+                e
+            );
             return Status::InternalServerError;
         }
     };
@@ -557,22 +628,32 @@ async fn create_flashcard_deck(
             return Status::Conflict; // the flashcard deck name already exists
         }
         Err(e) => {
-            error!("Failed to test if the flashcard deck name already exists : {}", e);
+            error!(
+                "Failed to test if the flashcard deck name already exists : {}",
+                e
+            );
             return Status::InternalServerError;
         }
         _ => {} // The 'else' clause. This is executed when the flashcard deck name is not in the database
     }
 
-    if let Err(e) = register_flashcard_deck(&mut db, user_id, &flashcard_deck_name, &flashcard_deck_description).await {
+    if let Err(e) = register_flashcard_deck(
+        &mut db,
+        user_id,
+        &flashcard_deck_name,
+        &flashcard_deck_description,
+    )
+    .await
+    {
         error!("Failed to register Flashcard Deck into DB: {}", e);
         return Status::InternalServerError;
-    }    
+    }
 
     return Status::Created;
 }
 
 #[instrument]
-#[post("/create-flashcard-deck", rank=2)]
+#[post("/create-flashcard-deck", rank = 2)]
 async fn bad_create_flashcard_deck() -> Status {
     return Status::BadRequest;
 }
@@ -603,8 +684,7 @@ async fn get_flashcard_decks(
     };
 
     // Generate a SQL query for flashcard deck names.
-    let query = sqlx::query("SELECT * FROM FlashcardDecks WHERE user_id = ?")
-    .bind(user_id);
+    let query = sqlx::query("SELECT * FROM FlashcardDecks WHERE user_id = ?").bind(user_id);
 
     // Perform the query to the database.
     let query_result = query.fetch_all(&mut **db).await;
@@ -628,11 +708,10 @@ async fn get_flashcard_decks(
             return Err(Status::InternalServerError);
         }
     }
-
 }
 
 #[instrument]
-#[get("/get-flashcard-decks", rank=2)]
+#[get("/get-flashcard-decks", rank = 2)]
 async fn bad_get_flashcard_decks() -> Status {
     return Status::BadRequest;
 }
