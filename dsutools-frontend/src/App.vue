@@ -7,6 +7,7 @@ import ToolItem from "./components/ToolItem.vue";
 import ToolButton from "./components/ToolButton.vue";
 import QuickLinks from "./components/QuickLinks.vue";
 import Calculator from "./components/Calculator.vue";
+import Vitamin from "./components/Vitamin.vue";
 </script>
 
 <template>
@@ -17,13 +18,17 @@ import Calculator from "./components/Calculator.vue";
             </nav>
             <div>
                 <ToolGrid>
-                    <ToolItem tool_name="Calculator"> 
-                        <Calculator/>
+                    <ToolItem tool_name="Calculator">
+                        <Calculator />
                     </ToolItem>
-                    <ToolButton 
-                        tool_name="Study Buddy" 
+                    <ToolButton
+                        tool_name="Vitamin Calculator"
+                        tool_link="/vitamincalculator.html"
+                    />
+                    <ToolButton
+                        tool_name="Study Buddy"
                         tool_link="/flashcards.html"
-                        />
+                    />
                     <ToolButton
                         tool_name="Color Calculator"
                         tool_link="/colors.html"

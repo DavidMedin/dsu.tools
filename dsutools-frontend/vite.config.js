@@ -20,6 +20,7 @@ export default defineConfig({
         colors: resolve(__dirname, "colors.html"),
         login: resolve(__dirname, "login.html"),
         register: resolve(__dirname, "register.html"),
+        vitamin: resolve(__dirname, "vitamincalculator.html"),
       },
     },
   },
