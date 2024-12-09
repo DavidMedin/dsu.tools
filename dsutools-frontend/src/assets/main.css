@@ -35,6 +35,25 @@ a,
     border-radius: 0.5em;
 }
 
+/* I took this from stack overflow. Removes the 'increment' and 'decrement' buttons in firefox and chrome. */
+input[type="number"] {
+    -moz-appearance: textfield;
+    appearance: textfield;
+    margin: 0;
+    background: var(--color-background-mute);
+    border-style: solid;
+    border-radius: 0.25rem;
+    border-color: var(--color-primary);
+    padding: 0;
+    text-align: center;
+    color: white;
+}
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
 button {
     background-color: var(--color-primary);
     color: white;
