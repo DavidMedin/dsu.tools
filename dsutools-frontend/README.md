@@ -40,7 +40,9 @@ npm run dev
 ```
 
 ### Compile and Minify for Production
-
+You'll need to run this if you want to run the dsutools-backend server with this frontend.\
+It will populate the `dist` directory with the compiled `html`, `css`, and `javascript` files.\
+Since we're using `vite` as our build system for the frontent, the `vite.config.js` file describes how to build the frontent.
 ```sh
 npm run build
 ```

@@ -21,7 +21,10 @@ import Calculator from "./components/Calculator.vue";
                         <Calculator/>
                     </ToolItem>
                     <ToolButton tool_name="Sodexo Menu" />
-                    <ToolButton tool_name="Study Buddy" />
+                    <ToolButton 
+                        tool_name="Study Buddy" 
+                        tool_link="/flashcards.html"
+                        />
                     <ToolButton tool_name="DSU Events" />
                     <ToolButton
                         tool_name="Color Calculator"
