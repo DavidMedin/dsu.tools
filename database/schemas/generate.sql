@@ -3,21 +3,19 @@
 -- It is used to create new tables and such in a SQL database.
 -- This file can be run against a SQLite database to create said tables and such.
 -- https://stackoverflow.com/questions/2578194
-
 -- In a DB viewer like DBeaver you can generate a DDL script from a table.
 -- Right-click on a table and select "Generate SQL" -> "DDL" to get the SQL DDL code like below.
-
 CREATE TABLE Users (
-	id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-	username TEXT NOT NULL,
-	password_hash TEXT NOT NULL
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    username TEXT NOT NULL,
+    password_hash TEXT NOT NULL
 );
 
 CREATE TABLE SessionTokens (
     id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     user_id INTEGER NOT NULL,
     token TEXT NOT NULL,
-    FOREIGN KEY (user_id) REFERENCES Users(id)
+    FOREIGN KEY (user_id) REFERENCES Users (id)
 );
 
 CREATE TABLE FlashcardDecks (
@@ -25,5 +23,13 @@ CREATE TABLE FlashcardDecks (
     deck_name TEXT NOT NULL,
     deck_description TEXT,
     user_id INTEGER NOT NULL,
-    FOREIGN KEY (user_id) REFERENCES Users(id)
+    FOREIGN KEY (user_id) REFERENCES Users (id)
+);
+
+CREATE TABLE Flashcards (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    flashcard_deck_id INTEGER NOT NULL,
+    front TEXT NOT NULL,
+    back TEXT NOT NULL,
+    FOREIGN KEY (flashcard_deck_id) REFERENCES FlashcardDecks (id)
 );
