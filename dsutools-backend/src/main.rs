@@ -257,6 +257,18 @@ async fn register_flashcard_deck(
     return Ok(());
 }
 
+#[instrument(skip(db))]
+async fn add_flashcards_to_deck(
+    db: &mut Connection<DsuToolsDB>,
+    deck_id: i64,
+    flashcards: Vec<FlashcardCreateDesciptor>,
+) -> Result<Vec<i32>, sqlx::Error> {
+    sqlx::query(
+        "iNSERT INTO Flashcards"
+    )
+    return Ok(vec![]);
+}
+
 #[derive(Database)] // A Rust macro that operates on the DsuToolsDB struct.
 #[database("dsutools_db")] // Links the DsuToolsDB struct to the "dsutools_db" database mentioned in the Rocket.toml file.
 struct DsuToolsDB(sqlx::SqlitePool); // A struct with one field, a SqlitePool.
@@ -714,6 +726,62 @@ async fn get_flashcard_decks(
 #[get("/get-flashcard-decks", rank = 2)]
 async fn bad_get_flashcard_decks() -> Status {
     return Status::BadRequest;
+}
+
+// Used for describing the creation of a flashcard.
+#[derive(Clone, Debug, Deserialize)]
+struct FlashcardCreateDesciptor {
+    side_one_text: String,
+    side_two_text: String,
+}
+
+#[derive(Clone, Debug, Deserialize)]
+struct CreateFlashcardsBody {
+    username: String,
+    flashcard_deck_name: String,
+    flashcards: Vec<FlashcardCreateDesciptor>,
+}
+
+#[instrument(skip(db, cookies))]
+#[post("/create-flashcards", format = "application/json", data = "<body>")]
+async fn create_flashcards(
+    body: Json<CreateFlashcardsBody>,
+    mut db: Connection<DsuToolsDB>,
+    cookies: &CookieJar<'_>,
+) -> Result<Json<Vec<u32>>, Status> {
+    // 1. Test the user exists and is authentication.
+    let user_id = match get_user_id(&mut db, &body.username).await {
+        Ok(id) => match id {
+            Some(i) => i,
+            None => return Err(Status::BadRequest),
+        },
+        Err(e) => {
+            error!(username = body.username, ?e);
+            return Err(Status::Unauthorized);
+        }
+    };
+
+    // 2. Test that the requested flashcard deck exists and is this user's
+    let flashcard_deck_id =
+        match get_flashcard_deck_id(&mut db, user_id, &body.flashcard_deck_name).await {
+            Ok(Some(id)) => id,
+            Ok(None) => return Err(Status::BadRequest),
+            Err(e) => {
+                error!(
+                    username = body.username,
+                    flashcard_deck_name = body.flashcard_deck_name,
+                    ?e
+                );
+                return Err(Status::BadRequest);
+            }
+        };
+
+    // 3. Add flashcards into database
+
+    // 4. Get and return primary keys of flashcards
+
+    let primary_keys: Vec<u32> = vec![3];
+    return Ok(Json(primary_keys));
 }
 
 // 'rocket::main' is another macro that tells Rocket that this is our main function.
