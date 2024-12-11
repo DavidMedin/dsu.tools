@@ -225,10 +225,6 @@ async fn get_flashcard_deck_id(
                 return Ok(None);
             } else {
                 // Something else is wrong!
-                error!(
-                    "Failed to get query DB for Flashcard ID with Flashcard Deck Name : {}",
-                    e
-                );
                 return Err(e);
             }
         }
@@ -279,6 +275,68 @@ async fn add_flashcards_to_deck(
     }
 
     return Ok(primary_keys);
+}
+
+#[instrument(skip(db))]
+async fn get_flashcards_in_deck(
+    db: &mut Connection<DsuToolsDB>,
+    deck_id: i64,
+) -> Result<Vec<Flashcard>, sqlx::Error> {
+    let card_query =
+        sqlx::query("SELECT * FROM Flashcards WHERE flashcard_deck_id = ?").bind(&deck_id);
+    let rows = card_query.fetch_all(&mut ***db).await?;
+
+    let flashies: Vec<Flashcard> = rows
+        .iter() // Get an iterator of the rows.
+        .map(|row| Flashcard {
+            // Apply this function to every iteration of the iterator.
+            id: row.get("id"),
+            side_one_text: row.get("side_one_text"),
+            side_two_text: row.get("side_two_text"),
+        })
+        .collect(); // Convert iterator into the desiered type (Vec<Flashcard> in this case).
+
+    return Ok(flashies);
+}
+
+// Very high level function that tests if the user exists and is authenticated.
+// Also returns the user id, because it is useful.
+async fn test_user(
+    db: &mut Connection<DsuToolsDB>,
+    cookies: &CookieJar<'_>,
+    username: &String,
+) -> Result<i64, Status> {
+    // 1. Test the user exists.
+    let user_id = match get_user_id(db, username).await {
+        Ok(id) => match id {
+            Some(i) => i,
+            None => return Err(Status::BadRequest),
+        },
+        Err(e) => {
+            error!(username = username, ?e);
+            return Err(Status::Unauthorized);
+        }
+    };
+
+    // 2. Test the user is authenticated.
+    let session_token = match cookies.get("session") {
+        Some(token) => token.value().to_string(),
+        None => {
+            return Err(Status::Unauthorized);
+        }
+    };
+    match is_token_authenticated(db, user_id, &session_token).await {
+        Ok(is_authed) => {
+            if false == is_authed {
+                return Err(Status::Unauthorized);
+            }
+        }
+        Err(e) => {
+            error!("Failed to test if session token is valid. : {}", e);
+            return Err(Status::InternalServerError);
+        }
+    }
+    return Ok(user_id);
 }
 
 #[derive(Database)] // A Rust macro that operates on the DsuToolsDB struct.
@@ -754,6 +812,13 @@ struct CreateFlashcardsBody {
     flashcards: Vec<FlashcardCreateDesciptor>,
 }
 
+#[derive(Serialize, Debug)]
+struct Flashcard {
+    id: i64,
+    side_one_text: String,
+    side_two_text: String,
+}
+
 #[instrument(skip(db, cookies))]
 #[post("/create-flashcards", format = "application/json", data = "<body>")]
 async fn create_flashcards(
@@ -761,38 +826,10 @@ async fn create_flashcards(
     mut db: Connection<DsuToolsDB>,
     cookies: &CookieJar<'_>,
 ) -> Result<Json<Vec<i64>>, Status> {
-    // 1. Test the user exists.
-    let user_id = match get_user_id(&mut db, &body.username).await {
-        Ok(id) => match id {
-            Some(i) => i,
-            None => return Err(Status::BadRequest),
-        },
-        Err(e) => {
-            error!(username = body.username, ?e);
-            return Err(Status::Unauthorized);
-        }
-    };
+    // 1. Test the user exists and is authenticated.
+    let user_id: i64 = test_user(&mut db, cookies, &body.username).await?;
 
-    // 2. Test the user is authenticated.
-    let session_token = match cookies.get("session") {
-        Some(token) => token.value().to_string(),
-        None => {
-            return Err(Status::Unauthorized);
-        }
-    };
-    match is_token_authenticated(&mut db, user_id, &session_token).await {
-        Ok(is_authed) => {
-            if false == is_authed {
-                return Err(Status::Unauthorized);
-            }
-        }
-        Err(e) => {
-            error!("Failed to test if session token is valid. : {}", e);
-            return Err(Status::InternalServerError);
-        }
-    }
-
-    // 3. Test that the requested flashcard deck exists and is this user's
+    // 2. Test that the requested flashcard deck exists and is this user's
     let flashcard_deck_id =
         match get_flashcard_deck_id(&mut db, user_id, &body.flashcard_deck_name).await {
             Ok(Some(id)) => id,
@@ -807,7 +844,7 @@ async fn create_flashcards(
             }
         };
 
-    // 4. Add flashcards into database
+    // 3. Add flashcards into database
     let card_ids: Vec<i64> =
         match add_flashcards_to_deck(&mut db, flashcard_deck_id, &body.flashcards).await {
             Ok(card_ids) => card_ids,
@@ -824,6 +861,44 @@ async fn create_flashcards(
 
 #[post("/create-flashcards", rank = 2)]
 async fn bad_create_flashcards() -> Status {
+    return Status::BadRequest;
+}
+
+#[get("/flashcard-deck?<username>&<flashcard_deck_name>")]
+async fn get_flashcard_deck(
+    username: String,
+    flashcard_deck_name: String,
+    mut db: Connection<DsuToolsDB>,
+    cookies: &CookieJar<'_>,
+) -> Result<Json<Vec<Flashcard>>, Status> {
+    // 1. Test the user is authenticated.
+    let user_id = test_user(&mut db, cookies, &username).await?;
+
+    // 2. Get flashcards in deck.
+    let deck_id = match get_flashcard_deck_id(&mut db, user_id, &flashcard_deck_name).await {
+        Ok(Some(id)) => id,
+        Ok(None) => {
+            return Err(Status::BadRequest);
+        }
+        Err(e) => {
+            error!("Failed to get flashcard deck id : {}", e);
+            return Err(Status::InternalServerError);
+        }
+    };
+
+    let flashies: Vec<Flashcard> = match get_flashcards_in_deck(&mut db, deck_id).await {
+        Ok(flashies) => flashies,
+        Err(e) => {
+            error!("Failed to get flashcards in a deck : {} ", e);
+            return Err(Status::InternalServerError);
+        }
+    };
+
+    return Ok(Json(flashies));
+}
+
+#[get("/flashcard-deck", rank = 2)]
+fn bad_get_flashcard_deck() -> Status {
     return Status::BadRequest;
 }
 
@@ -863,7 +938,9 @@ async fn main() -> Result<(), rocket::Error> {
                 get_flashcard_decks,
                 bad_get_flashcard_decks,
                 create_flashcards,
-                bad_create_flashcards
+                bad_create_flashcards,
+                get_flashcard_deck,
+                bad_get_flashcard_deck
             ],
         )
         .mount("/", FileServer::from("../dsutools-frontend/dist/"))
