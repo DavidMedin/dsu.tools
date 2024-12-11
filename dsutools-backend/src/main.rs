@@ -8,7 +8,7 @@ use rocket::http::{CookieJar, Status};
 use rocket::serde::{json::Json, Deserialize};
 
 // Database (also Rocket)
-use rocket_db_pools::sqlx::{self, query, Row};
+use rocket_db_pools::sqlx::{self, Row};
 use rocket_db_pools::{Connection, Database};
 
 // Random Numbers
@@ -349,7 +349,7 @@ async fn login(
 
     // 3. Check if the user is already logged in.
     match get_user_token(&mut db, user_id).await {
-        Ok(Some(token)) => {
+        Ok(Some(_)) => {
             // If the user is already logged in, return a HTTP 409 Conflict status code.
             return Status::Conflict;
         }
@@ -787,7 +787,7 @@ async fn create_flashcards(
             }
         }
         Err(e) => {
-            error!("Failed to test if session token is valid.");
+            error!("Failed to test if session token is valid. : {}", e);
             return Err(Status::InternalServerError);
         }
     }
