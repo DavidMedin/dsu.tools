@@ -99,6 +99,10 @@ function Delete()
 
 function Operation(input)
 {
+  if(curOp === Operator.DONE)
+  {
+    ClearMem();
+  }
   //some operations are done when the button is pressed,
   //so they need to be checked before doing the equals
   if(input === Operator.LOG)
