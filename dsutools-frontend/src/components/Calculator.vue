@@ -45,7 +45,7 @@ function Append(input)
   
   //adds input at the end of the string
   console.log(input)
-  if(curNumber.value === '0' && input != '.')
+  if(curNumber.value === '0' && input != '.' && input !== Math.PI && input !== Math.E)
   {
     realValue = input
     curNumber.value = input
@@ -54,7 +54,7 @@ function Append(input)
   else if (input === Math.PI || input === Math.E)
   {
     realValue = input
-    curNumber.value = input
+    curNumber.value = input.toFixed(decimalPlaces)
     piOrEPressed = true
   }
   else
@@ -99,6 +99,10 @@ function Delete()
 
 function Operation(input)
 {
+  if(curOp === Operator.DONE)
+  {
+    ClearMem();
+  }
   //some operations are done when the button is pressed,
   //so they need to be checked before doing the equals
   if(input === Operator.LOG)
@@ -124,7 +128,7 @@ function Operation(input)
   else if (input === Operator.REC)
   {
     realValue = 1 / realValue
-    curNumber.value = realValue
+    curNumber.value = realValue.toFixed(decimalPlaces)
   }
   else if (input === Operator.SQRT)
   {
@@ -166,7 +170,7 @@ function Equals()
   }
   else if(curOp === Operator.ADD)
   {
-    realValue = numA + numB
+    realValue = Number(numA) + Number(numB)
   }
   else if(curOp === Operator.SUB)
   {
@@ -195,6 +199,8 @@ function Equals()
   curOp = Operator.DONE
   if(Math.ceil(realValue) > realValue)
     curNumber.value = realValue.toFixed(decimalPlaces)
+  else if(Math.log10(realValue) > decimalPlaces)
+    curNumber.value = (Number(realValue)).toPrecision(decimalPlaces)
   else
     curNumber.value = realValue
   clearText = true;
