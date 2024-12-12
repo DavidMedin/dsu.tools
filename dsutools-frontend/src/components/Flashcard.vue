@@ -2,7 +2,11 @@
 import { ref } from 'vue';
 
 const props = defineProps({
-  tool_name: {
+  front: {
+    type: String,
+    required: true
+  },
+  back: {
     type: String,
     required: true
   }
@@ -19,10 +23,10 @@ function flipCard() {
     <div class="flip-card" @click="flipCard">
       <div :class="['flip-card-inner', { flipped: isFlipped }]">
         <div class="flip-card-front">
-          <!-- Front content -->
+          <div>{{ front }}</div>
         </div>
         <div class="flip-card-back">
-          <!-- Back content -->
+         <div>{{ back }}</div>
         </div>
       </div>
     </div>
@@ -61,11 +65,17 @@ function flipCard() {
   .flip-card-front {
     background-color: #bbb;
     color: black;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 .flip-card-back {
-      transform: rotateY(180deg);
+    transform: rotateY(180deg);
     background-color: #2980b9;
     color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
   }
   </style>

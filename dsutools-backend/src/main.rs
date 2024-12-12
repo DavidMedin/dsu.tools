@@ -263,11 +263,11 @@ async fn add_flashcards_to_deck(
 
     for flashcard in flashcards {
         let query = sqlx::query(
-            "INSERT INTO Flashcards (flashcard_deck_id, front, back) VALUES (?, ?, ?, ?)",
+            "INSERT INTO Flashcards (flashcard_deck_id, front, back) VALUES (?, ?, ?)",
         )
         .bind(&deck_id)
-        .bind(&flashcard.side_one_text)
-        .bind(&flashcard.side_two_text);
+        .bind(&flashcard.flashcard_front)
+        .bind(&flashcard.flashcard_back);
 
         let row = query.execute(&mut ***db).await?;
         let primary_key = row.last_insert_rowid();
@@ -291,8 +291,8 @@ async fn get_flashcards_in_deck(
         .map(|row| Flashcard {
             // Apply this function to every iteration of the iterator.
             id: row.get("id"),
-            side_one_text: row.get("side_one_text"),
-            side_two_text: row.get("side_two_text"),
+            flashcard_front: row.get("front"),
+            flashcard_back: row.get("back"),
         })
         .collect(); // Convert iterator into the desiered type (Vec<Flashcard> in this case).
 
@@ -801,8 +801,8 @@ async fn bad_get_flashcard_decks() -> Status {
 // Used for describing the creation of a flashcard.
 #[derive(Deserialize, Debug)]
 struct FlashcardCreateDesciptor {
-    side_one_text: String,
-    side_two_text: String,
+    flashcard_front: String,
+    flashcard_back: String,
 }
 
 #[derive(Deserialize, Debug)]
@@ -815,8 +815,8 @@ struct CreateFlashcardsBody {
 #[derive(Serialize, Debug)]
 struct Flashcard {
     id: i64,
-    side_one_text: String,
-    side_two_text: String,
+    flashcard_front: String,
+    flashcard_back: String,
 }
 
 #[instrument(skip(db, cookies))]
