@@ -5,6 +5,9 @@ import Page from "./components/Page.vue";
 import { onMounted, ref } from "vue";
 
 const isFormVisible = ref(false);
+const isFlashcardFormVisible = ref(false);
+const flashcards = ref([]);
+const isFlashcardSetSelected = ref(false);
 
 function openNewFlashcardSetForm() {
     isFormVisible.value = true;
@@ -14,17 +17,81 @@ function closeNewFlashcardSetForm() {
     isFormVisible.value = false;
 }
 
+function openNewFlashcardForm() {
+    isFlashcardFormVisible.value = true;
+}
+
+function closeNewFlashcardForm() {
+    isFlashcardFormVisible.value = false;
+
+    if (localStorage.getItem("username") == null) {
+        alert("Please log in to create a flashcard!");
+        return;
+    }
+
+    let createFlashcardsData = {
+        username: localStorage.getItem("username"),
+        flashcard_deck_name: localStorage.getItem("currentDeck"),
+        flashcards: flashcards.value,
+    }
+
+    fetch(`/create-flashcards`, {
+        method: "POST",
+        body: JSON.stringify(createFlashcardsData),
+        headers: {
+            "Content-Type": "application/json",
+        },
+    })
+        .then(function(response) {
+            return response.json();
+        })
+        .then(function(data) {
+            console.log(data);
+            console.log("Flashcards saved successfully!");
+        })
+        .catch(function(error) {
+            console.error("Error: ", error);
+        });
+}
+
+// display the saved flashcard decks in the sidebar
 function addFlashcardSetToSidebar(flashcardSet) {
     let savedSets = document.getElementById("saved-sets");
     let flashcardSetElement = document.createElement("div");
     flashcardSetElement.textContent = flashcardSet.name;
+    flashcardSetElement.classList.add("flashcard-set");
+    flashcardSet.id = flashcardSet.name;
     flashcardSetElement.style.cursor = "pointer";
     flashcardSetElement.addEventListener("click", () => {
-        console.log("Flashcard set clicked: ", flashcardSet);
+        isFlashcardSetSelected.value = true;
+        fetchDecksFlashcards(flashcardSet.name);
+        localStorage.setItem("currentDeck", flashcardSet.name);
     });
     savedSets.appendChild(flashcardSetElement);
 }
 
+// fetch the flashcards for a specific deck
+function fetchDecksFlashcards(deckName) {
+    if (localStorage.getItem("username") == null) {
+        alert("Please log in to view your flashcard sets!");
+        return;
+    }
+    fetch(`/flashcard-deck?username=${localStorage.getItem("username")}&flashcard_deck_name=${deckName}`, {
+        method: "GET",
+    })
+        .then(function(response) {
+            return response.json();
+        })
+        .then(function(data) {
+            console.log(data);
+            flashcards.value = data;
+        })
+        .catch(function(error) {
+            console.error("Error: ", error);
+        });
+}
+
+// fetch the saved flashcard decks
 function displaySavedFlashcardSets() {
     if (localStorage.getItem("username") == null) {
         alert("Please log in to view your flashcard sets!");
@@ -46,6 +113,29 @@ function displaySavedFlashcardSets() {
             console.error("Error: ", error);
         });
 }
+
+// create new flashcard
+onMounted(() => 
+{document.getElementById("newFlashcardForm").addEventListener("submit", (e) => {
+    e.preventDefault();
+
+    let front = document.getElementsByName("front")[0].value;
+    let back = document.getElementsByName("back")[0].value;
+    let deckName = localStorage.getItem("currentDeck");
+
+    let username = localStorage.getItem("username");
+    if (username == null) {
+        alert("Please log in to create a flashcard!");
+        return;
+    }
+
+    if (front == "" || back == "") {
+        alert("Front and Back cannot be empty!");
+    } else {
+        flashcards.value.push({ flashcard_front: front, flashcard_back: back });            
+        document.getElementById("newFlashcardForm").reset();
+    }
+});})
 
 onMounted(() => {
     displaySavedFlashcardSets();
@@ -131,15 +221,31 @@ onMounted(() => {
         <button type="submit" class="btn">Create</button>
         <button type="button" class="btn cancel" @click="closeNewFlashcardSetForm">Close</button>
     </form>
+    <form class="form-popup round-box" id="newFlashcardForm" :class="{ 'show': isFlashcardFormVisible }">
+        <h1>New Flashcard</h1>
+
+        <label for="front"><b>Front</b></label>
+        <input type="text" name="front" required>
+
+        <label for="back"><b>Back</b></label>
+        <input type="text" name="back">
+
+        <button type="submit" class="btn">Create</button>
+        <button type="button" class="btn cancel" @click="closeNewFlashcardForm">Close</button>
+    </form>
     <Page direction="row" justifyContent="space-between" alignTimes="auto">
         <div class="sidebar">
             <button class="sticky-button" @click="openNewFlashcardSetForm">Create new flashcard set</button>
+            <button class="sticky-button" v-show="isFlashcardSetSelected" @click="openNewFlashcardForm">Create new flashcard</button>
 
             <h3 id="saved-sets-header" style="color: var(--color-primary)">SAVED SETS</h3>
             <div id="saved-sets">
             </div>
         </div>
         <div class="flashcards-main">
+            <template v-for="flashcard in flashcards" v-if="flashcards">
+                <Flashcard :front=flashcard.flashcard_front :back=flashcard.flashcard_back></Flashcard>
+            </template>
         </div>
     </Page>
 </template>
@@ -175,6 +281,9 @@ onMounted(() => {
     padding: 1em;
     min-height: 5em;
     font-size: 1.5rem;
+    display: flex;
+    gap: 1em;
+    flex-wrap: wrap;
 }
 
 /* The popup form - hidden by default */
@@ -202,11 +311,13 @@ onMounted(() => {
     opacity: 1;
 }
 
-#newFlashcardSetForm {
+#newFlashcardSetForm,
+#newFlashcardForm {
     box-shadow: 0 0.25rem 0.5rem var(--color-primary), 0 0.375rem 1.25rem 0 var(--color-primary);
 }
 
-#newFlashcardSetForm input {
+#newFlashcardSetForm input,
+#newFlashcardForm input {
     width: 100%;
     padding: 0.5em;
     margin-bottom: 1em;
@@ -216,7 +327,8 @@ onMounted(() => {
     background-color: var(--color-background-mute);
 }
 
-#newFlashcardSetForm button {
+#newFlashcardSetForm button,
+#newFlashcardForm button {
     padding: 0.5em 1em;
     background-color: darken(var(--color-primary), 10%);
     color: white;
@@ -225,7 +337,8 @@ onMounted(() => {
     cursor: pointer; 
 }
 
-#newFlashcardSetForm button:hover {
+#newFlashcardSetForm button:hover,
+#newFlashcardForm button:hover {
     background-color: var(--color-primary);
 }
 

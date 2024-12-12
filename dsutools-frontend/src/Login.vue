@@ -78,11 +78,11 @@ onMounted(() => {
             <label for="password">Password:</label>
             <input type="password" id="password" name="password" required />
             <button type="submit">Login</button>
+            <div style="display: flex; flex-direction: column; align-items: center;">
+                <h2>Don't have an account?</h2>
+                <button onclick="location.href = '/register.html'">Register</button>
+            </div>
         </form>
-        <div style="display: flex; flex-direction: column; align-items: center;">
-            <h2>Don't have an account?</h2>
-            <button onclick="location.href = '/register.html'">Register</button>
-        </div>
     </Page>
 </template>
 
