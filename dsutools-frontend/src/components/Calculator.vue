@@ -182,7 +182,10 @@ function Equals()
   }
   else if(curOp === Operator.DIV)
   {
-    realValue = numA / numB
+    if(Number(numB) === 0)
+      realValue = Number.NaN
+    else
+      realValue = numA / numB
   }
   else if(curOp === Operator.EXP)
   {
