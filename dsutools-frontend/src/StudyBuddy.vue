@@ -135,7 +135,7 @@ onMounted(() => {
 </script>
 
 <template>
-    <form class="form-popup" id="newFlashcardSetForm" :class="{ 'show': isFormVisible }">
+    <form class="form-popup" id="newFlashcardSetForm" :class="{ 'show': isFormVisible }" v-show="isFormVisible">
         <h1>New Flashcard Set</h1>
 
         <p v-if="errorMessage" style="color: red;">{{ errorMessage }}</p>
@@ -143,14 +143,14 @@ onMounted(() => {
         <input type="text" placeholder="Enter Name" name="name" required>
 
         <label for="description"><b>Description</b></label>
-        <input type="description" placeholder="Enter Description" name="description">
+        <input type="text" placeholder="Enter Description" name="description">
 
         <button type="submit" class="btn">Create</button>
         <button type="button" class="btn cancel" @click="toggleVisibility">Close</button>
     </form>
     <Page direction="row" justifyContent="space-between" alignTimes="auto">
         <div class="sidebar">
-            <button class="sticky-button" @click="toggleVisibility">Create new flashcard set</button>
+            <button class="sticky-button" :set="isFormVisible" @click="toggleVisibility">Create new flashcard set</button>
             <h3 id="saved-sets-header" style="color: var(--color-primary)">SAVED SETS</h3>
             <div id="saved-sets">
                 <div v-for="set in savedSets" 
