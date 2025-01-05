@@ -71,7 +71,7 @@ onMounted(() => {
 
 <template>
     <Page direction="column">
-        <form id="login-form" class="round-box">
+        <form id="login-form">
             <h1>Login</h1>
             <label for="username">Username:</label>
             <input type="text" id="username" name="username" required />
@@ -87,43 +87,4 @@ onMounted(() => {
 </template>
 
 <style scoped>
-.round-box {
-    border-color: var(--color-primary);
-    border-width: 0.2em;
-    border-style: solid;
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 30%;
-    height: 60%;
-}
-
-#login-form label {
-    margin-bottom: 0.5em;
-    font-weight: bold;
-}
-
-#login-form input {
-    width: 100%;
-    padding: 0.5em;
-    margin-bottom: 1em;
-    border: 1px solid var(--color-primary);
-    border-radius: 4px;
-    box-sizing: border-box;
-    background-color: var(--color-background-mute);
-}
-
-#login-form button {
-    padding: 0.5em 1em;
-    background-color: darken(var(--color-primary), 10%);
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-}
-
-#login-form button:hover {
-    background-color: var(--color-primary);
-}
 </style>

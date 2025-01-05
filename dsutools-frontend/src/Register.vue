@@ -66,7 +66,7 @@ onMounted(() => {
 
 <template>
     <Page>
-        <form id="register-form" class="round-box">
+        <form id="register-form">
             <h1>Register</h1>
             <label for="username">Username:</label>
             <input type="text" id="username" name="username" required />
@@ -78,43 +78,4 @@ onMounted(() => {
 </template>
 
 <style scoped>
-.round-box {
-    border-color: var(--color-primary);
-    border-width: 0.2em;
-    border-style: solid;
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 30%;
-    height: 60%;
-}
-
-#register-form label {
-    margin-bottom: 0.5em;
-    font-weight: bold;
-}
-
-#register-form input {
-    width: 100%;
-    padding: 0.5em;
-    margin-bottom: 1em;
-    border: 1px solid var(--color-primary);
-    border-radius: 4px;
-    box-sizing: border-box;
-    background-color: var(--color-background-mute);
-}
-
-#register-form button {
-    padding: 0.5em 1em;
-    background-color: darken(var(--color-primary), 10%);
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-}
-
-#register-form button:hover {
-    background-color: var(--color-primary);
-}
 </style>
