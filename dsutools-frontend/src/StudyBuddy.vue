@@ -19,7 +19,7 @@ function selectSet(set) {
     selectedSet.value = set;
     fetchDecksFlashcards(set.name);
     localStorage.setItem("currentDeck", set.name);
-    selectSet.value = set;
+    FlashcardSetOptions.value.isSetSelected = true;
 }
 
 // fetch the flashcards for a specific deck
@@ -202,30 +202,35 @@ function closeFormAndSaveFlashcards() {
 <template>
     <Page direction="row" justifyContent="space-between" alignTimes="auto">
         <div class="sidebar">
-            <button class="sticky-button" :set="isFlashcardSetFormVisible" @click="toggleVisibility">Create new flashcard set</button>
+            <button class="sticky-button" :set="isFlashcardSetFormVisible" @click="toggleVisibility">
+                Create new flashcard set
+            </button>
             <h3 id="saved-sets-header" style="color: var(--color-primary)">SAVED SETS</h3>
             <div id="saved-sets">
                 <div v-for="set in savedSets" 
                     :key="set.id" 
                     class="flashcard-set"
-                    style = "cursor: pointer;"
-                    @click="selectSet(set)"
                 >
-                    {{ set.name }}
+                    <div 
+                        class="set-name"
+                        style="cursor: pointer;"
+                        @click="selectSet(set)"
+                    >
+                        {{ set.name }}
+                    </div>
+                    <FlashcardSetOptions 
+                        v-if="selectedSet && selectedSet.id === set.id" 
+                        :deckName="set.name"
+                        :onOpenNewFlashcardForm="openNewFlashcardForm"
+                    />
                 </div>
-                <FlashcardSetOptions 
-                    v-if="selectedSet" 
-                    :set="selectedSet" 
-                    :deckName=selectedSet.name 
-                    :isSetSelected="true" 
-                    :functionOnClick="openNewFlashcardForm"/>
             </div>
         </div>
         <div class="flashcards-main">
             <template v-for="flashcard in flashcards" v-if="flashcards">
                 <Flashcard 
-                    :front=flashcard.flashcard_front 
-                    :back=flashcard.flashcard_back>
+                    :front="flashcard.flashcard_front" 
+                    :back="flashcard.flashcard_back">
                 </Flashcard>
             </template>
         </div>

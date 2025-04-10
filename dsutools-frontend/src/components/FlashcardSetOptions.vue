@@ -17,7 +17,7 @@ const props = defineProps({
 </script>
 
 <template>
-    <button class="sticky-button" v-show="isSetSelected" @click="props.functionOnClick">Create new flashcard</button>
+    <button class="sticky-button" @click="props.functionOnClick">Create new flashcard</button>
     <div>Deckname is: {{ deckName }}</div>
 </template>
 
